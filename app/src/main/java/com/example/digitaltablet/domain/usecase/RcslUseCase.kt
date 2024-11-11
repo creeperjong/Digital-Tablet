@@ -1,6 +1,7 @@
 package com.example.digitaltablet.domain.usecase
 
 import android.util.Log
+import com.example.digitaltablet.domain.model.rcsl.Organization
 import com.example.digitaltablet.domain.model.rcsl.Robot
 import com.example.digitaltablet.domain.repository.IRcslRepository
 import com.example.digitaltablet.util.getValueFromLinkedTreeMap
@@ -17,4 +18,7 @@ class RcslUseCase(
         return rcslRepository.getRobotList()
     }
 
+    suspend fun getOpenAiInfo(): List<Organization> {
+        return rcslRepository.getOpenAiInfo()
+    }
 }

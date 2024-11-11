@@ -7,6 +7,6 @@ data class TabletState(
     val displayTouchArea: Boolean = false,
 
     // R&T
-    val deviceId: String = "",
+    val deviceId: String = ""
 
 )

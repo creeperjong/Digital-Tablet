@@ -3,6 +3,7 @@ package com.example.digitaltablet.presentation.robot
 import androidx.lifecycle.ViewModel
 import com.example.digitaltablet.domain.usecase.MqttUseCase
 import com.example.digitaltablet.domain.usecase.RcslUseCase
+import com.example.digitaltablet.util.Constants
 import com.example.digitaltablet.util.Constants.Mqtt
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +26,11 @@ class TabletViewModel @Inject constructor(
                 clearToast()
             }
             is TabletEvent.SetConnectInfos -> {
-                setConnectInfos(event.deviceId)
+                setConnectInfos(
+                    deviceId = event.deviceId,
+                    apiKey = event.apiKey,
+                    asstId = event.asstId
+                )
             }
             is TabletEvent.ConnectMqttBroker -> {
                 connectMqtt()
@@ -36,10 +41,24 @@ class TabletViewModel @Inject constructor(
         }
     }
 
-    private fun setConnectInfos(deviceId: String) {
+    private fun setConnectInfos(deviceId: String, apiKey: String, asstId: String) {
         _state.value = _state.value.copy(
             deviceId = deviceId
         )
+        if (apiKey.isNotBlank()) {
+            mqttUseCase.publish(
+                topic = getFullTopic(Mqtt.Topic.API_KEY),
+                message = apiKey,
+                qos = 0
+            )
+        }
+        if (asstId.isNotBlank()) {
+            mqttUseCase.publish(
+                topic = getFullTopic(Mqtt.Topic.ASST_ID),
+                message = asstId,
+                qos = 0
+            )
+        }
     }
 
     private fun resetAllTempStates() {

@@ -4,7 +4,11 @@ sealed class TabletEvent {
 
     data object ClearToastMsg: TabletEvent()
 
-    data class SetConnectInfos(val deviceId: String): TabletEvent()
+    data class SetConnectInfos(
+        val deviceId: String,
+        val apiKey: String,
+        val asstId: String,
+    ): TabletEvent()
 
     data object ConnectMqttBroker: TabletEvent()
 

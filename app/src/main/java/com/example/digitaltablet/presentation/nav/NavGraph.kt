@@ -8,7 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.digitaltablet.presentation.robot.TabletEvent
-import com.example.digitaltablet.presentation.robot.RobotScreen
+import com.example.digitaltablet.presentation.robot.TabletScreen
 import com.example.digitaltablet.presentation.robot.TabletViewModel
 import com.example.digitaltablet.presentation.startup.QrCodeScannerScreen
 import com.example.digitaltablet.presentation.startup.StartUpScreen
@@ -26,7 +26,6 @@ fun NavGraph() {
             StartUpScreen(
                 state = state,
                 onEvent = startUpViewModel::onEvent,
-                navigateToScanner = { navController.navigate(Route.QrCodeScannerScreen.route) },
                 navigateToRobot = { connectInfo ->
                     navController.currentBackStackEntry
                         ?.savedStateHandle
@@ -50,11 +49,15 @@ fun NavGraph() {
                 ?.get<StartUpState>("connectInfo")
                 .let { connectInfo ->
                     tabletViewModel.onEvent(
-                        TabletEvent.SetConnectInfos(deviceId = connectInfo?.deviceId ?: "")
+                        TabletEvent.SetConnectInfos(
+                            deviceId = connectInfo?.deviceId ?: "",
+                            apiKey = connectInfo?.projApiKey ?: "",
+                            asstId = connectInfo?.asstId ?: ""
+                        )
                     )
                 }
 
-            RobotScreen(
+            TabletScreen(
                 state = state,
                 onEvent = tabletViewModel::onEvent
             )

@@ -1,5 +1,7 @@
 package com.example.digitaltablet.presentation.robot
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -7,7 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.digitaltablet.util.ToastManager
 
 @Composable
-fun RobotScreen(
+fun TabletScreen(
     state: TabletState,
     onEvent: (TabletEvent) -> Unit
 ) {
@@ -32,6 +34,7 @@ fun RobotScreen(
         }
     }
 
+    Text(text = "deviceId = ${state.deviceId}", color = MaterialTheme.colorScheme.onBackground)
 
 }
 
