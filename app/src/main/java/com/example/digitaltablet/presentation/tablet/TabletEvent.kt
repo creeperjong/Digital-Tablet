@@ -1,0 +1,29 @@
+package com.example.digitaltablet.presentation.tablet
+
+import androidx.compose.ui.geometry.Offset
+
+sealed class TabletEvent {
+
+    data object ClearToastMsg: TabletEvent()
+
+    data class SetConnectInfos(
+        val deviceId: String,
+        val apiKey: String,
+        val asstId: String,
+    ): TabletEvent()
+
+    data object ConnectMqttBroker: TabletEvent()
+
+    data object DisconnectMqttBroker: TabletEvent()
+
+    data class TapOnCanvas(val position: Offset): TabletEvent()
+
+    data object ClearCanvas: TabletEvent()
+
+    data object ToggleCaptionVisibility: TabletEvent()
+
+    data object ToggleImageVisibility: TabletEvent()
+
+    data class SwitchImage(val page: Int): TabletEvent()
+
+}

@@ -7,9 +7,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.digitaltablet.presentation.robot.TabletEvent
-import com.example.digitaltablet.presentation.robot.TabletScreen
-import com.example.digitaltablet.presentation.robot.TabletViewModel
+import com.example.digitaltablet.presentation.tablet.TabletEvent
+import com.example.digitaltablet.presentation.tablet.TabletScreen
+import com.example.digitaltablet.presentation.tablet.TabletViewModel
 import com.example.digitaltablet.presentation.startup.QrCodeScannerScreen
 import com.example.digitaltablet.presentation.startup.StartUpScreen
 import com.example.digitaltablet.presentation.startup.StartUpState

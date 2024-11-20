@@ -1,10 +1,16 @@
-package com.example.digitaltablet.presentation.robot
+package com.example.digitaltablet.presentation.tablet
+
+import androidx.compose.ui.geometry.Offset
 
 data class TabletState(
 
     // UI
     val toastMessages: List<String> = emptyList(),
     val displayTouchArea: Boolean = false,
+    val canvasTapPositions: List<Offset> = emptyList(),
+    val isCanvasTappable: Boolean = true,
+    val isCaptionVisible: Boolean = true,
+    val isImageVisible: Boolean = true,
 
     // R&T
     val deviceId: String = "",
@@ -17,6 +23,7 @@ data class TabletState(
             "Quisque efficitur urna id magna luctus dapibus. Aliquam faucibus velit nec suscipit vehicula. Fusce commodo, tellus non suscipit aliquam, felis est tincidunt nibh, non scelerisque nunc turpis id lorem. Maecenas faucibus, orci quis ullamcorper semper, augue velit auctor dui, at tincidunt tortor ipsum auctor ex. Aliquam volutpat ornare enim, a semper leo viverra et. Praesent id mi vitae diam dignissim molestie non eu enim. Integer varius et mi sed tincidunt. Nullam quis est quis risus consequat hendrerit vitae non neque.\n" +
             "\n" +
             "Vestibulum hendrerit mattis est. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam ut nisl sit amet metus hendrerit blandit nec in diam. Praesent consectetur, enim ac vulputate volutpat, turpis neque luctus sem, a aliquam est lacus laoreet nunc. Mauris tincidunt massa at sapien posuere, in luctus massa gravida. Sed dictum sit amet lectus at vestibulum. Duis sit amet fringilla nisi. In id turpis lobortis, elementum urna ac, blandit mi.",
-    val mediaUrl: String = "test.jpg",
-    val responseCaption: String = "Learner: test response"
+    val responseCaption: String = "Learner: test response",
+    val imageSources: List<String> = listOf("https://zidian.18dao.net/image/%E6%9D%AF.png", "https://zidian.18dao.net/image/%E7%93%B6.png"),
+    val imageIdx: Int? = 0
 )
