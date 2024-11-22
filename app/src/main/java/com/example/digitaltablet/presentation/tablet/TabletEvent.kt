@@ -37,4 +37,6 @@ sealed class TabletEvent {
 
     data class ChangeDialogTextInput(val text: String): TabletEvent()
 
+    data class UploadFile(val uri: Uri?): TabletEvent()
+
 }

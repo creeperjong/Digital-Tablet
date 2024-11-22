@@ -1,6 +1,7 @@
 package com.example.digitaltablet.presentation.tablet
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import com.example.digitaltablet.domain.usecase.MqttUseCase
@@ -57,7 +58,7 @@ class TabletViewModel @Inject constructor(
                 switchImage(event.page)
             }
             is TabletEvent.UploadImage -> {
-                onImageUploaded(event.uri, event.onSent)
+                sendImage(event.uri, event.onSent)
             }
             is TabletEvent.ConfirmDialog -> {
                 sendTextInput(_state.value.dialogTextInput)
@@ -71,6 +72,9 @@ class TabletViewModel @Inject constructor(
             }
             is TabletEvent.ChangeDialogTextInput -> {
                 _state.value = _state.value.copy(dialogTextInput = event.text)
+            }
+            is TabletEvent.UploadFile -> {
+                sendFile(event.uri)
             }
         }
     }
@@ -143,7 +147,7 @@ class TabletViewModel @Inject constructor(
      *  R&T related functions
      */
 
-    private fun onImageUploaded(uri: Uri?, onSent: (Uri) -> Unit) {
+    private fun sendImage(uri: Uri?, onSent: (Uri) -> Unit) {
         if ( uri == null ) {
             showToast("Error: Image not found.")
         } else {
@@ -160,6 +164,14 @@ class TabletViewModel @Inject constructor(
             message = text,
             qos = 0
         )
+    }
+
+    private fun sendFile(uri: Uri?) {
+        if ( uri == null) {
+            showToast("Error: File not found")
+        } else {
+            // TODO
+        }
     }
 
 

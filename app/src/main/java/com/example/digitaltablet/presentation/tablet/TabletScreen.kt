@@ -65,13 +65,14 @@ fun TabletScreen(
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        if ( uri == null ) return@rememberLauncherForActivityResult
-        val contentResolver = context.contentResolver
-        val mimeType = contentResolver.getType(uri)
-        if ( mimeType?.startsWith("image/") == true) {
-            onEvent(TabletEvent.UploadImage(uri))
-        } else {
-            onEvent(TabletEvent.UploadImage(null))
+        uri?.let {
+            val contentResolver = context.contentResolver
+            val mimeType = contentResolver.getType(it)
+            if ( mimeType?.startsWith("image/") == true) {
+                onEvent(TabletEvent.UploadImage(it))
+            } else {
+                onEvent(TabletEvent.UploadImage(null))
+            }
         }
     }
 
@@ -92,6 +93,14 @@ fun TabletScreen(
             onEvent(TabletEvent.UploadImage(photoUri) { uri ->
                 uri.toFile().delete()
             })
+        }
+    }
+
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let {
+            onEvent(TabletEvent.UploadFile(uri))
         }
     }
 
@@ -206,7 +215,7 @@ fun TabletScreen(
                         .padding(SmallPadding)
                         .fillMaxWidth()
                         .weight(1f),
-                    onClick = { /*TODO*/ }
+                    onClick = { filePickerLauncher.launch(arrayOf("*/*")) }
                 ) {
                     Icon(
                         imageVector = ImageVector.vectorResource(id = R.drawable.ic_attachment),
