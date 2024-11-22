@@ -1,5 +1,7 @@
 package com.example.digitaltablet.presentation.tablet.component
 
+import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
@@ -13,12 +15,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import coil3.compose.rememberAsyncImagePainter
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -27,7 +29,7 @@ import kotlin.math.min
 
 @Composable
 fun ClickableCanvas(
-    imageUrl: String,
+    imageUri: String,
     tapPositions: List<Offset>,
     tappable: Boolean,
     modifier: Modifier = Modifier,
@@ -38,16 +40,27 @@ fun ClickableCanvas(
         mutableStateOf(null)
     }
 
-    LaunchedEffect(imageUrl) {
-        if (imageUrl == "") {
+    LaunchedEffect(imageUri) {
+        if (imageUri == "") {
             backgroundImage = null
-        } else {
+        } else if (imageUri.startsWith("http")) {
             val request = ImageRequest.Builder(context)
-                .data(imageUrl)
+                .data(imageUri)
                 .build()
             val result = context.imageLoader.execute(request)
             if (result is SuccessResult) {
                 backgroundImage = result.image.toBitmap().asImageBitmap()
+            }
+        } else if ( Uri.parse(imageUri).scheme != null ) {
+            backgroundImage = try {
+                val uri = Uri.parse(imageUri)
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val bitmap = BitmapFactory.decodeStream(inputStream)
+                inputStream?.close()
+                bitmap?.asImageBitmap()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
         }
     }
@@ -74,7 +87,7 @@ fun ClickableCanvas(
             )
         }
 
-        if (tappable && imageUrl.isNotBlank()) {
+        if (tappable && imageUri.isNotBlank()) {
             tapPositions.forEach { position ->
                 drawCircle(
                     color = Color.Red,

@@ -1,5 +1,6 @@
 package com.example.digitaltablet.presentation.tablet
 
+import android.net.Uri
 import androidx.compose.ui.geometry.Offset
 
 sealed class TabletEvent {
@@ -25,5 +26,7 @@ sealed class TabletEvent {
     data object ToggleImageVisibility: TabletEvent()
 
     data class SwitchImage(val page: Int): TabletEvent()
+
+    data class UploadImage(val uri: Uri?): TabletEvent()
 
 }

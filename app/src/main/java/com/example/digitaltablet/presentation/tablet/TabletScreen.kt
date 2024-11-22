@@ -1,10 +1,9 @@
 package com.example.digitaltablet.presentation.tablet
 
-import android.app.ActionBar.Tab
-import androidx.compose.foundation.Canvas
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +12,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -24,17 +21,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
@@ -54,6 +44,18 @@ fun TabletScreen(
     onEvent: (TabletEvent) -> Unit
 ) {
     val context = LocalContext.current
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if ( uri == null ) return@rememberLauncherForActivityResult
+        val contentResolver = context.contentResolver
+        val mimeType = contentResolver.getType(uri)
+        if ( mimeType?.startsWith("image/") == true) {
+            onEvent(TabletEvent.UploadImage(uri))
+        } else {
+            onEvent(TabletEvent.UploadImage(null))
+        }
+    }
 
     state.toastMessages.let {
         if (it.isNotEmpty()) {
@@ -91,21 +93,26 @@ fun TabletScreen(
                     .fillMaxHeight()
                     .weight(1f)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_kebbi),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(SmallPadding)
-                        .weight(1f)
-                        .clickable { }
-                )
-
                 IconButton(
                     modifier = Modifier
                         .padding(SmallPadding)
                         .fillMaxWidth()
                         .weight(1f),
                     onClick = { /*TODO*/ }
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_kebbi),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                IconButton(
+                    modifier = Modifier
+                        .padding(SmallPadding)
+                        .fillMaxWidth()
+                        .weight(1f),
+                    onClick = { imagePickerLauncher.launch("image/*") }
                 ) {
                     Icon(
                         imageVector = ImageVector.vectorResource(id = R.drawable.ic_image),
@@ -220,7 +227,7 @@ fun TabletScreen(
                             .weight(8f)
                     ) {
                         ClickableCanvas(
-                            imageUrl =
+                            imageUri =
                             if (state.imageIdx != null)
                                 state.imageSources[state.imageIdx]
                             else

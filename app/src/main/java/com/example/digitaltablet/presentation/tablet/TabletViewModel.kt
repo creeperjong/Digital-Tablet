@@ -1,11 +1,11 @@
 package com.example.digitaltablet.presentation.tablet
 
+import android.net.Uri
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import com.example.digitaltablet.domain.usecase.MqttUseCase
 import com.example.digitaltablet.domain.usecase.RcslUseCase
 import com.example.digitaltablet.util.Constants.Mqtt
-import com.google.common.collect.Table
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -55,6 +55,9 @@ class TabletViewModel @Inject constructor(
             }
             is TabletEvent.SwitchImage -> {
                 switchImage(event.page)
+            }
+            is TabletEvent.UploadImage -> {
+                onImageUploaded(event.uri)
             }
         }
     }
@@ -126,6 +129,14 @@ class TabletViewModel @Inject constructor(
     /*
      *  R&T related functions
      */
+
+    private fun onImageUploaded(uri: Uri?) {
+        if ( uri == null ) {
+            showToast("Error: image not found.")
+        } else {
+            // TODO
+        }
+    }
 
 
     // TODO
