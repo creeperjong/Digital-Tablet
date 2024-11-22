@@ -1,6 +1,8 @@
 package com.example.digitaltablet.presentation.tablet
 
 import android.Manifest
+import android.app.ActionBar.Tab
+import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
@@ -15,12 +17,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -30,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,9 +49,10 @@ import com.example.digitaltablet.presentation.Dimens.SmallFontSize
 import com.example.digitaltablet.presentation.Dimens.SmallPadding
 import com.example.digitaltablet.presentation.tablet.component.ClickableCanvas
 import com.example.digitaltablet.presentation.tablet.component.ScrollableCaption
+import com.example.digitaltablet.util.Constants
 import com.example.digitaltablet.util.ToastManager
 import com.example.digitaltablet.util.createImageFile
-import com.example.digitaltablet.util.toImageBitmap
+import com.google.common.collect.Table
 
 @Composable
 fun TabletScreen(
@@ -56,6 +60,8 @@ fun TabletScreen(
     onEvent: (TabletEvent) -> Unit
 ) {
     val context = LocalContext.current
+
+    // Image Upload
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -68,6 +74,8 @@ fun TabletScreen(
             onEvent(TabletEvent.UploadImage(null))
         }
     }
+
+    // Camera & Photo Upload
     var hasCameraPermission by remember { mutableStateOf(false) }
     val photoUri = remember {
         context.contentResolver.createImageFile("temp_photo.jpg")
@@ -101,6 +109,7 @@ fun TabletScreen(
             context,
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
+        if (!hasCameraPermission) cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         onEvent(TabletEvent.ConnectMqttBroker)
     }
 
@@ -166,9 +175,6 @@ fun TabletScreen(
                             photoUri?.let { cameraLauncher.launch(it) }
                         } else {
                             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                            if (hasCameraPermission) {
-                                photoUri?.let { cameraLauncher.launch(it) }
-                            }
                         }
                     }
                 ) {
@@ -185,7 +191,7 @@ fun TabletScreen(
                         .padding(SmallPadding)
                         .fillMaxWidth()
                         .weight(1f),
-                    onClick = { /*TODO*/ }
+                    onClick = { onEvent(TabletEvent.ShowDialog) }
                 ) {
                     Icon(
                         imageVector = ImageVector.vectorResource(id = R.drawable.ic_keyboard),
@@ -411,6 +417,37 @@ fun TabletScreen(
         }
     }
 
+    // Text input dialog
+    if (state.showTextDialog) {
+        AlertDialog(
+            onDismissRequest = { onEvent(TabletEvent.DismissDialog) },
+            title = { Text(text = "Enter response") },
+            text = {
+                TextField(
+                    value = state.dialogTextInput,
+                    onValueChange = { onEvent(TabletEvent.ChangeDialogTextInput(it)) },
+                    label = { Text("Message") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Row (
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = { onEvent(TabletEvent.ConfirmDialog) }
+                    ) {
+                        Text(text = "OK")
+                    }
+                    Button(onClick = { onEvent(TabletEvent.DismissDialog) } ) {
+                        Text(text = "Cancel")
+                    }
+                }
+            }
+        )
+    }
 }
 
 @Preview

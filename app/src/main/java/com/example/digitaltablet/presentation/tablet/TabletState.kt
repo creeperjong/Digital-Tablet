@@ -11,6 +11,8 @@ data class TabletState(
     val isCanvasTappable: Boolean = true,
     val isCaptionVisible: Boolean = true,
     val isImageVisible: Boolean = true,
+    val showTextDialog: Boolean = false,
+    val dialogTextInput: String = "",
 
     // R&T
     val deviceId: String = "",

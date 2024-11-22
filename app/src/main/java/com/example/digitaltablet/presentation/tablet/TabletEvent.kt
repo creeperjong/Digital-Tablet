@@ -29,4 +29,12 @@ sealed class TabletEvent {
 
     data class UploadImage(val uri: Uri?, val onSent: (Uri) -> Unit = {}): TabletEvent()
 
+    data object ConfirmDialog: TabletEvent()
+
+    data object ShowDialog: TabletEvent()
+
+    data object DismissDialog: TabletEvent()
+
+    data class ChangeDialogTextInput(val text: String): TabletEvent()
+
 }

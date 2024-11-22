@@ -59,6 +59,19 @@ class TabletViewModel @Inject constructor(
             is TabletEvent.UploadImage -> {
                 onImageUploaded(event.uri, event.onSent)
             }
+            is TabletEvent.ConfirmDialog -> {
+                sendTextInput(_state.value.dialogTextInput)
+                _state.value = _state.value.copy(showTextDialog = false, dialogTextInput = "")
+            }
+            is TabletEvent.ShowDialog -> {
+                _state.value = _state.value.copy(showTextDialog = true)
+            }
+            is TabletEvent.DismissDialog -> {
+                _state.value = _state.value.copy(showTextDialog = false)
+            }
+            is TabletEvent.ChangeDialogTextInput -> {
+                _state.value = _state.value.copy(dialogTextInput = event.text)
+            }
         }
     }
 
@@ -139,6 +152,14 @@ class TabletViewModel @Inject constructor(
                 imageSources = _state.value.imageSources + uri.toString()
             )
         }
+    }
+
+    private fun sendTextInput(text: String) {
+        mqttUseCase.publish(
+            topic = getFullTopic(Mqtt.Topic.TEXT_INPUT),
+            message = text,
+            qos = 0
+        )
     }
 
 
