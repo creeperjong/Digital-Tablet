@@ -1,5 +1,6 @@
 package com.example.digitaltablet.presentation.tablet.component
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.Canvas
@@ -25,6 +26,7 @@ import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.toBitmap
+import com.example.digitaltablet.util.toImageBitmap
 import kotlin.math.min
 
 @Composable
@@ -52,16 +54,7 @@ fun ClickableCanvas(
                 backgroundImage = result.image.toBitmap().asImageBitmap()
             }
         } else if ( Uri.parse(imageUri).scheme != null ) {
-            backgroundImage = try {
-                val uri = Uri.parse(imageUri)
-                val inputStream = context.contentResolver.openInputStream(uri)
-                val bitmap = BitmapFactory.decodeStream(inputStream)
-                inputStream?.close()
-                bitmap?.asImageBitmap()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
+            backgroundImage = Uri.parse(imageUri).toImageBitmap(context)
         }
     }
 

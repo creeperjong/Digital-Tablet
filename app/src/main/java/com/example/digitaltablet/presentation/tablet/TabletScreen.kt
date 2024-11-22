@@ -1,6 +1,9 @@
 package com.example.digitaltablet.presentation.tablet
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -21,14 +24,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
+import androidx.core.net.toFile
 import com.example.digitaltablet.R
 import com.example.digitaltablet.presentation.Dimens.LargeFontSize
 import com.example.digitaltablet.presentation.Dimens.MediumFontSize
@@ -37,6 +47,8 @@ import com.example.digitaltablet.presentation.Dimens.SmallPadding
 import com.example.digitaltablet.presentation.tablet.component.ClickableCanvas
 import com.example.digitaltablet.presentation.tablet.component.ScrollableCaption
 import com.example.digitaltablet.util.ToastManager
+import com.example.digitaltablet.util.createImageFile
+import com.example.digitaltablet.util.toImageBitmap
 
 @Composable
 fun TabletScreen(
@@ -56,6 +68,24 @@ fun TabletScreen(
             onEvent(TabletEvent.UploadImage(null))
         }
     }
+    var hasCameraPermission by remember { mutableStateOf(false) }
+    val photoUri = remember {
+        context.contentResolver.createImageFile("temp_photo.jpg")
+    }
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasCameraPermission = isGranted
+    }
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ){ success ->
+        if (success) {
+            onEvent(TabletEvent.UploadImage(photoUri) { uri ->
+                uri.toFile().delete()
+            })
+        }
+    }
 
     state.toastMessages.let {
         if (it.isNotEmpty()) {
@@ -67,6 +97,10 @@ fun TabletScreen(
     }
 
     LaunchedEffect(Unit) {
+        hasCameraPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
         onEvent(TabletEvent.ConnectMqttBroker)
     }
 
@@ -127,7 +161,16 @@ fun TabletScreen(
                         .padding(SmallPadding)
                         .fillMaxWidth()
                         .weight(1f),
-                    onClick = { /*TODO*/ }
+                    onClick = {
+                        if (hasCameraPermission) {
+                            photoUri?.let { cameraLauncher.launch(it) }
+                        } else {
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                            if (hasCameraPermission) {
+                                photoUri?.let { cameraLauncher.launch(it) }
+                            }
+                        }
+                    }
                 ) {
                     Icon(
                         imageVector = ImageVector.vectorResource(id = R.drawable.ic_camera),

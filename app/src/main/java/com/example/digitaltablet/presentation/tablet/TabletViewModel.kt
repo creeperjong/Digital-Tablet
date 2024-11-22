@@ -57,7 +57,7 @@ class TabletViewModel @Inject constructor(
                 switchImage(event.page)
             }
             is TabletEvent.UploadImage -> {
-                onImageUploaded(event.uri)
+                onImageUploaded(event.uri, event.onSent)
             }
         }
     }
@@ -130,11 +130,14 @@ class TabletViewModel @Inject constructor(
      *  R&T related functions
      */
 
-    private fun onImageUploaded(uri: Uri?) {
+    private fun onImageUploaded(uri: Uri?, onSent: (Uri) -> Unit) {
         if ( uri == null ) {
-            showToast("Error: image not found.")
+            showToast("Error: Image not found.")
         } else {
-            // TODO
+            // TODO: upload & after sent
+            _state.value = _state.value.copy(
+                imageSources = _state.value.imageSources + uri.toString()
+            )
         }
     }
 

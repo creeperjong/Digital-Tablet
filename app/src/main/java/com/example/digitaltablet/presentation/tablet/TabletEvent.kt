@@ -27,6 +27,6 @@ sealed class TabletEvent {
 
     data class SwitchImage(val page: Int): TabletEvent()
 
-    data class UploadImage(val uri: Uri?): TabletEvent()
+    data class UploadImage(val uri: Uri?, val onSent: (Uri) -> Unit = {}): TabletEvent()
 
 }
