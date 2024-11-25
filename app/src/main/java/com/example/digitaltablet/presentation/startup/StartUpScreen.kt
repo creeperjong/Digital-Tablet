@@ -26,7 +26,7 @@ import com.example.digitaltablet.ui.theme.DigitalTabletTheme
 fun StartUpScreen(
     state: StartUpState,
     onEvent: (StartUpEvent) -> Unit,
-    navigateToRobot: (StartUpState) -> Unit
+    navigateToTablet: (StartUpState) -> Unit
 ) {
 
     val context = LocalContext.current
@@ -139,7 +139,7 @@ fun StartUpScreen(
         }
 
 
-        Button(onClick = { navigateToRobot(state) },
+        Button(onClick = { navigateToTablet(state) },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -162,7 +162,7 @@ private fun StartUpScreenPreview() {
         StartUpScreen(
             state = StartUpState(),
             onEvent = {},
-            navigateToRobot = {}
+            navigateToTablet = {}
         )
     }
 }

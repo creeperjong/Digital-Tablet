@@ -41,8 +41,10 @@ class MqttRepository(
         onMessageArrived: (String, String) -> Unit
     ) {
         if (isBound and !isConnected) {
-            mqttService?.connect(host, deviceId, onConnected, onMessageArrived)
-            isConnected = true
+            mqttService?.connect(host, deviceId, {
+                isConnected = true
+                onConnected()
+            }, onMessageArrived)
         }
     }
 
@@ -58,20 +60,24 @@ class MqttRepository(
         }
     }
 
-    override fun disconnect() {
+    override fun disconnect(onDisconnected: () -> Unit) {
         if (isBound and isConnected) {
-            mqttService?.disconnect()
-            isConnected = false
+            mqttService?.disconnect {
+                isConnected = false
+                onDisconnected()
+            }
         }
     }
 
     override fun bindService(onServiceConnected: () -> Unit) {
+        onServiceConnectedCallback = onServiceConnected
         if (!isBound) {
-            onServiceConnectedCallback = onServiceConnected
             val intent = Intent(context, MqttMessageService::class.java)
             context.startService(intent)
             context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
             isBound = true
+        } else {
+            onServiceConnectedCallback!!.invoke()
         }
     }
 

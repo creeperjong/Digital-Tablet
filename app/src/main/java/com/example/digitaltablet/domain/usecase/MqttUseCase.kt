@@ -1,5 +1,6 @@
 package com.example.digitaltablet.domain.usecase
 
+import android.util.Log
 import com.example.digitaltablet.data.repository.MqttRepository
 import com.example.digitaltablet.domain.repository.IMqttRepository
 import javax.inject.Inject
@@ -16,8 +17,8 @@ class MqttUseCase (
         repository.connect(host, deviceId, onConnected, onMessageArrived)
     }
 
-    fun disconnect() {
-        repository.disconnect()
+    fun disconnect(onDisconnected: () -> Unit) {
+        repository.disconnect(onDisconnected)
     }
 
     fun bindService(onServiceConnected: () -> Unit) {

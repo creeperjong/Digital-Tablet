@@ -27,5 +27,9 @@ data class TabletState(
             "Vestibulum hendrerit mattis est. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nam ut nisl sit amet metus hendrerit blandit nec in diam. Praesent consectetur, enim ac vulputate volutpat, turpis neque luctus sem, a aliquam est lacus laoreet nunc. Mauris tincidunt massa at sapien posuere, in luctus massa gravida. Sed dictum sit amet lectus at vestibulum. Duis sit amet fringilla nisi. In id turpis lobortis, elementum urna ac, blandit mi.",
     val responseCaption: String = "Learner: test response",
     val imageSources: List<String> = listOf("https://zidian.18dao.net/image/%E6%9D%AF.png", "https://zidian.18dao.net/image/%E7%93%B6.png"),
-    val imageIdx: Int? = 0
+    val imageIdx: Int? = 0,
+
+    // LLM
+    val gptApiKey: String = "",
+    val assistantId: String = ""
 )

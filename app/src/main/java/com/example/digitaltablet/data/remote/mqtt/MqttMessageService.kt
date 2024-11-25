@@ -59,11 +59,12 @@ class MqttMessageService : Service() {
                 Handler(Looper.getMainLooper()).post {
                     Toast.makeText(
                         this@MqttMessageService,
-                        "MQTT connectionLost",
+                        "MQTT Broker Disconnected!",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-                connect(host, deviceId, onConnected, onMessageArrived)
+                mqttClient = null
+                mqttAndroidClient = null
             }
 
             @Throws(Exception::class)
@@ -96,9 +97,11 @@ class MqttMessageService : Service() {
         })
     }
 
-    fun disconnect() {
+    fun disconnect(onDisconnected: () -> Unit) {
+        mqttAndroidClient?.disconnect()
         mqttClient = null
         mqttAndroidClient = null
+        onDisconnected()
     }
 
     fun subscribe(topic: String, qos: Int) {
@@ -131,7 +134,6 @@ class MqttMessageService : Service() {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
-        disconnect()
         return super.onUnbind(intent)
     }
 

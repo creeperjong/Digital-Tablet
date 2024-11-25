@@ -22,6 +22,7 @@ navigationCompose = "2.7.7"
 orgEclipsePahoClientMqttv3 = "1.1.1"
 pahoMqttAndroid = "4.2.4"
 retrofit = "2.11.0"
+playServicesMlkitBarcodeScanning = "18.3.1"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCamera2" }
@@ -57,6 +58,7 @@ navigation-compose = { module = "androidx.navigation:navigation-compose", versio
 org-eclipse-paho-client-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "orgEclipsePahoClientMqttv3" }
 paho-mqtt-android = { module = "com.github.hannesa2:paho.mqtt.android", version.ref = "pahoMqttAndroid" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+play-services-mlkit-barcode-scanning = { group = "com.google.android.gms", name = "play-services-mlkit-barcode-scanning", version.ref = "playServicesMlkitBarcodeScanning" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

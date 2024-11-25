@@ -123,6 +123,9 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 
+    // QRCode scanner
+    implementation(libs.play.services.mlkit.barcode.scanning)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -4,13 +4,16 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.digitaltablet.domain.usecase.MqttUseCase
 import com.example.digitaltablet.domain.usecase.RcslUseCase
 import com.example.digitaltablet.util.Constants.Mqtt
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
@@ -76,27 +79,18 @@ class TabletViewModel @Inject constructor(
             is TabletEvent.UploadFile -> {
                 sendFile(event.uri)
             }
+            is TabletEvent.ReceiveQrCodeResult -> {
+                sendTextInput(event.result)
+            }
         }
     }
 
     private fun setConnectInfos(deviceId: String, apiKey: String, asstId: String) {
         _state.value = _state.value.copy(
-            deviceId = deviceId
+            deviceId = deviceId,
+            gptApiKey = apiKey,
+            assistantId = asstId
         )
-        if (apiKey.isNotBlank()) {
-            mqttUseCase.publish(
-                topic = getFullTopic(Mqtt.Topic.API_KEY),
-                message = apiKey,
-                qos = 0
-            )
-        }
-        if (asstId.isNotBlank()) {
-            mqttUseCase.publish(
-                topic = getFullTopic(Mqtt.Topic.ASST_ID),
-                message = asstId,
-                qos = 0
-            )
-        }
     }
 
     private fun resetAllTempStates() {
@@ -147,6 +141,25 @@ class TabletViewModel @Inject constructor(
      *  R&T related functions
      */
 
+    private fun sendConnectInfos() {
+        val apiKey = _state.value.gptApiKey
+        val asstId = _state.value.assistantId
+        if (apiKey.isNotBlank()) {
+            mqttUseCase.publish(
+                topic = getFullTopic(Mqtt.Topic.API_KEY),
+                message = apiKey,
+                qos = 0
+            )
+        }
+        if (asstId.isNotBlank()) {
+            mqttUseCase.publish(
+                topic = getFullTopic(Mqtt.Topic.ASST_ID),
+                message = asstId,
+                qos = 0
+            )
+        }
+    }
+
     private fun sendImage(uri: Uri?, onSent: (Uri) -> Unit) {
         if ( uri == null ) {
             showToast("Error: Image not found.")
@@ -188,6 +201,7 @@ class TabletViewModel @Inject constructor(
                 deviceId = _state.value.deviceId,
                 onConnected = {
                     initialSubscription()
+                    sendConnectInfos()
                 },
                 onMessageArrived = { topic, message ->
                     onMqttMessageArrived(topic, message)
@@ -197,8 +211,7 @@ class TabletViewModel @Inject constructor(
     }
 
     private fun disconnectMqtt() {
-        mqttUseCase.disconnect()
-        mqttUseCase.unbindService()
+        mqttUseCase.disconnect {}
     }
 
     private fun initialSubscription() {

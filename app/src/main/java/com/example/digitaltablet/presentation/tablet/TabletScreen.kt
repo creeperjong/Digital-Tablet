@@ -6,6 +6,7 @@ import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -57,7 +58,9 @@ import com.google.common.collect.Table
 @Composable
 fun TabletScreen(
     state: TabletState,
-    onEvent: (TabletEvent) -> Unit
+    onEvent: (TabletEvent) -> Unit,
+    navigateToScanner: () -> Unit,
+    navigateUp: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -113,6 +116,10 @@ fun TabletScreen(
         }
     }
 
+    BackHandler {
+        onEvent(TabletEvent.DisconnectMqttBroker)
+    }
+
     LaunchedEffect(Unit) {
         hasCameraPermission = ContextCompat.checkSelfPermission(
             context,
@@ -120,12 +127,6 @@ fun TabletScreen(
         ) == PackageManager.PERMISSION_GRANTED
         if (!hasCameraPermission) cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         onEvent(TabletEvent.ConnectMqttBroker)
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            onEvent(TabletEvent.DisconnectMqttBroker)
-        }
     }
 
     Column (
@@ -150,7 +151,7 @@ fun TabletScreen(
                         .padding(SmallPadding)
                         .fillMaxWidth()
                         .weight(1f),
-                    onClick = { /*TODO*/ }
+                    onClick = { navigateUp() /* TODO: Send finish tag */ }
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_kebbi),
@@ -230,7 +231,13 @@ fun TabletScreen(
                         .padding(SmallPadding)
                         .fillMaxWidth()
                         .weight(1f),
-                    onClick = { /*TODO*/ }
+                    onClick = {
+                        if (hasCameraPermission) {
+                            navigateToScanner()
+                        } else {
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                        }
+                    }
                 ) {
                     Icon(
                         imageVector = ImageVector.vectorResource(id = R.drawable.ic_qrcode),
@@ -462,7 +469,7 @@ fun TabletScreen(
 @Preview
 @Composable
 fun PreviewScreen() {
-    TabletScreen(state = TabletState()) {
+    TabletScreen(state = TabletState(), {}, {}) {
 
     }
 }

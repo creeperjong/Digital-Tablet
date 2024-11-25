@@ -7,7 +7,7 @@ interface IMqttRepository {
         onConnected: () -> Unit,
         onMessageArrived: (String, String) -> Unit
     )
-    fun disconnect()
+    fun disconnect(onDisconnected: () -> Unit)
     fun subscribe(topic: String, qos: Int)
     fun publish(topic: String, message: String, qos: Int)
     fun bindService(onServiceConnected: () -> Unit)
