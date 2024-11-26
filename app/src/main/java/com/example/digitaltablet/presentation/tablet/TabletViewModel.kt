@@ -1,19 +1,15 @@
 package com.example.digitaltablet.presentation.tablet
 
 import android.net.Uri
-import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.digitaltablet.domain.usecase.MqttUseCase
 import com.example.digitaltablet.domain.usecase.RcslUseCase
 import com.example.digitaltablet.util.Constants.Mqtt
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
@@ -165,9 +161,6 @@ class TabletViewModel @Inject constructor(
             showToast("Error: Image not found.")
         } else {
             // TODO: upload & after sent
-            _state.value = _state.value.copy(
-                imageSources = _state.value.imageSources + uri.toString()
-            )
         }
     }
 
@@ -216,7 +209,11 @@ class TabletViewModel @Inject constructor(
 
     private fun initialSubscription() {
         mqttUseCase.apply {
-            // TODO
+            subscribe(getFullTopic(Mqtt.Topic.TTS), 0)
+            subscribe(getFullTopic(Mqtt.Topic.STT), 0)
+            subscribe(getFullTopic(Mqtt.Topic.IMAGE), 0)
+            subscribe(getFullTopic(Mqtt.Topic.TABLET), 0)
+            subscribe(getFullTopic(Mqtt.Topic.ARGV), 0)
         }
     }
 
@@ -226,7 +223,15 @@ class TabletViewModel @Inject constructor(
 
     private fun onMqttMessageArrived(topic: String, message: String) {
         when (topic) {
-            // TODO
+            getFullTopic(Mqtt.Topic.TTS) -> {
+                _state.value = _state.value.copy(caption = message)
+            }
+            getFullTopic(Mqtt.Topic.STT) -> {
+                val caption = message.replaceFirstChar { it.uppercase() }
+                    .split(": ")
+                    .joinToString(": ") { sentence -> sentence.replaceFirstChar { it.uppercase() } }
+                _state.value = _state.value.copy(responseCaption = caption)
+            }
         }
     }
 

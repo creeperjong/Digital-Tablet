@@ -69,6 +69,16 @@ android {
     compileOptions {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    packaging {
+        resources {
+            excludes.add("META-INF/LICENSE-LGPL-2.1.txt")
+            excludes.add("META-INF/LICENSE-LGPL-3.txt")
+            excludes.add("META-INF/LICENSE-W3C-TEST")
+            excludes.add("META-INF/DEPENDENCIES")
+        }
+    }
+
 }
 
 dependencies {
@@ -125,6 +135,9 @@ dependencies {
 
     // QRCode scanner
     implementation(libs.play.services.mlkit.barcode.scanning)
+
+    // Markdown
+    implementation(libs.flexmark.all)
 
 
     testImplementation(libs.junit)

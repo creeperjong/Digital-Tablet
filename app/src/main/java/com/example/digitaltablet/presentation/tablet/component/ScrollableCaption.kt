@@ -21,8 +21,7 @@ import com.example.digitaltablet.presentation.Dimens.SmallPadding
 
 @Composable
 fun ScrollableCaption(
-    caption: String,
-    modifier: Modifier = Modifier
+    caption: String
 ) {
 
     val scrollState = rememberScrollState()
@@ -39,19 +38,14 @@ fun ScrollableCaption(
 
     LaunchedEffect(caption) {
         isUserScrolling = false
-        kotlinx.coroutines.delay(5000)
+        kotlinx.coroutines.delay(3000)
         while (!isUserScrolling && scrollState.value < scrollState.maxValue) {
             scrollState.scrollTo(scrollState.value + 1)
             kotlinx.coroutines.delay(16L)
         }
     }
 
-    Box(modifier = modifier.verticalScroll(scrollState)) {
-        Text(
-            text = caption,
-            fontSize = MediumFontSize,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(SmallPadding)
-        )
+    Box(modifier = Modifier.verticalScroll(scrollState)) {
+        MarkdownText(markdown = caption)
     }
 }

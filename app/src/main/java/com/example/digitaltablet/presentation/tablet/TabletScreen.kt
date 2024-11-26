@@ -1,11 +1,8 @@
 package com.example.digitaltablet.presentation.tablet
 
 import android.Manifest
-import android.app.ActionBar.Tab
-import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,10 +46,8 @@ import com.example.digitaltablet.presentation.Dimens.SmallFontSize
 import com.example.digitaltablet.presentation.Dimens.SmallPadding
 import com.example.digitaltablet.presentation.tablet.component.ClickableCanvas
 import com.example.digitaltablet.presentation.tablet.component.ScrollableCaption
-import com.example.digitaltablet.util.Constants
 import com.example.digitaltablet.util.ToastManager
 import com.example.digitaltablet.util.createImageFile
-import com.google.common.collect.Table
 
 @Composable
 fun TabletScreen(

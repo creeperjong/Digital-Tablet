@@ -2,6 +2,7 @@ package com.example.digitaltablet.presentation.startup
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.digitaltablet.domain.usecase.LanguageModelUseCase
@@ -70,14 +71,14 @@ class StartUpViewModel @Inject constructor(
             val asstName = _state.value.asstName
 
             _state.value = _state.value.copy(
-                projApiKey = info[orgName]?.get(projName) ?: "",
+                projApiKey = decodeApiKey(info[orgName]?.get(projName) ?: ""),
                 orgOptions = info.keys.toList(),
                 projOptions = info[orgName] ?: emptyMap(),
                 openAiInfo = info,
             )
 
             if (orgName.isNotBlank() && projName.isNotBlank() && asstName.isNotBlank()) {
-                val apiKey = decodeApiKey(_state.value.projOptions[projName] ?: "")
+                val apiKey = _state.value.projApiKey
                 val assistants = languageModelUseCase.getAssistantList(
                     gptApiKey = apiKey
                 )

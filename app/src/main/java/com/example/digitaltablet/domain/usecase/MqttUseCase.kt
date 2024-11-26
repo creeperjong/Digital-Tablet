@@ -14,7 +14,7 @@ class MqttUseCase (
         onConnected: () -> Unit,
         onMessageArrived: (String, String) -> Unit
     ) {
-        repository.connect(host, deviceId, onConnected, onMessageArrived)
+        repository.connect(host, deviceId + "_tablet", onConnected, onMessageArrived)
     }
 
     fun disconnect(onDisconnected: () -> Unit) {
