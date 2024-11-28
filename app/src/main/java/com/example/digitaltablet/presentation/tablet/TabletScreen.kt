@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,6 +47,7 @@ import com.example.digitaltablet.presentation.Dimens.SmallFontSize
 import com.example.digitaltablet.presentation.Dimens.SmallPadding
 import com.example.digitaltablet.presentation.tablet.component.ClickableCanvas
 import com.example.digitaltablet.presentation.tablet.component.ScrollableCaption
+import com.example.digitaltablet.presentation.tablet.component.YouTubePlayer
 import com.example.digitaltablet.util.ToastManager
 import com.example.digitaltablet.util.createImageFile
 
@@ -268,8 +270,8 @@ fun TabletScreen(
                 ) {
                     Text(
                         text =
-                        if (state.imageIdx != null)
-                            state.imageSources[state.imageIdx]
+                        if (state.mediaIdx != null)
+                            state.mediaSources[state.mediaIdx]
                         else
                             "",
                         fontSize = SmallFontSize,
@@ -285,17 +287,27 @@ fun TabletScreen(
                             .fillMaxWidth()
                             .weight(8f)
                     ) {
-                        ClickableCanvas(
-                            imageUri =
-                            if (state.imageIdx != null)
-                                state.imageSources[state.imageIdx]
-                            else
-                                "",
-                            tapPositions = state.canvasTapPositions,
-                            tappable = state.isCanvasTappable,
-                            modifier = Modifier.fillMaxSize()
-                        ) { tapPosition ->
-                            onEvent(TabletEvent.TapOnCanvas(tapPosition))
+                        if (state.mediaIdx != null &&
+                            state.mediaIdx in state.mediaSources.indices
+                        ) {
+                            val media = state.mediaSources[state.mediaIdx]
+                            if (media.contains("youtube") ||
+                                media.contains("youtu.be")
+                            ) {
+                                YouTubePlayer(
+                                    videoUrl = media,
+                                    modifier = Modifier.fillMaxSize().aspectRatio(16f / 9f)
+                                )
+                            } else {
+                                ClickableCanvas(
+                                    imageUri = media,
+                                    tapPositions = state.canvasTapPositions,
+                                    tappable = state.isCanvasTappable,
+                                    modifier = Modifier.fillMaxSize()
+                                ) { tapPosition ->
+                                    onEvent(TabletEvent.TapOnCanvas(tapPosition))
+                                }
+                            }
                         }
                     }
                     Row (
@@ -308,7 +320,7 @@ fun TabletScreen(
                         Button(
                             onClick = {
                                 onEvent(TabletEvent.SwitchImage(
-                                    page = state.imageIdx?.minus(1) ?: 0)
+                                    page = state.mediaIdx?.minus(1) ?: 0)
                                 )
                             },
                             colors = ButtonDefaults.buttonColors(
@@ -316,7 +328,7 @@ fun TabletScreen(
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             shape = MaterialTheme.shapes.large,
-                            enabled = state.imageIdx in 1 until state.imageSources.size ,
+                            enabled = state.mediaIdx in 1 until state.mediaSources.size ,
                             modifier = Modifier
                                 .padding(end = SmallPadding)
                                 .fillMaxHeight()
@@ -352,7 +364,7 @@ fun TabletScreen(
                         }
                         Button(onClick = {
                             onEvent(TabletEvent.SwitchImage(
-                                page = state.imageIdx?.plus(1) ?: 0)
+                                page = state.mediaIdx?.plus(1) ?: 0)
                             )
                         },
                             colors = ButtonDefaults.buttonColors(
@@ -360,7 +372,7 @@ fun TabletScreen(
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             shape = MaterialTheme.shapes.large,
-                            enabled = state.imageIdx in 0 until state.imageSources.size - 1,
+                            enabled = state.mediaIdx in 0 until state.mediaSources.size - 1,
                             modifier = Modifier
                                 .padding(start = SmallPadding)
                                 .fillMaxHeight()

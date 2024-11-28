@@ -126,9 +126,9 @@ class TabletViewModel @Inject constructor(
     }
 
     private fun switchImage(page: Int) {
-        val maxPage = _state.value.imageSources.size
+        val maxPage = _state.value.mediaSources.size
         _state.value = _state.value.copy(
-            imageIdx = max(min(page, maxPage - 1), 0),
+            mediaIdx = max(min(page, maxPage - 1), 0),
             canvasTapPositions = emptyList()
         )
     }

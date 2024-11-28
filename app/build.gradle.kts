@@ -139,6 +139,9 @@ dependencies {
     // Markdown
     implementation(libs.flexmark.all)
 
+    // YouTube Player
+    implementation(libs.core)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

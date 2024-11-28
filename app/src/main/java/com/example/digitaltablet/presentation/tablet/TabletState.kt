@@ -18,8 +18,8 @@ data class TabletState(
     val deviceId: String = "",
     val caption: String = "",
     val responseCaption: String = "",
-    val imageSources: List<String> = listOf("https://zidian.18dao.net/image/%E6%9D%AF.png", "https://zidian.18dao.net/image/%E7%93%B6.png", ),
-    val imageIdx: Int? = 0,
+    val mediaSources: List<String> = listOf("https://zidian.18dao.net/image/%E6%9D%AF.png", "https://zidian.18dao.net/image/%E7%93%B6.png", "https://youtu.be/tbDGl7jEazA"),
+    val mediaIdx: Int? = 0,
 
     // LLM
     val gptApiKey: String = "",
