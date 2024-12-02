@@ -345,6 +345,7 @@ fun TabletScreen(
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             shape = MaterialTheme.shapes.large,
+                            enabled = state.isCanvasTappable,
                             modifier = Modifier
                                 .padding(horizontal = SmallPadding)
                                 .fillMaxHeight()
@@ -358,6 +359,7 @@ fun TabletScreen(
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             shape = MaterialTheme.shapes.large,
+                            enabled = state.isCanvasTappable,
                             modifier = Modifier
                                 .padding(horizontal = SmallPadding)
                                 .fillMaxHeight()
@@ -402,13 +404,16 @@ fun TabletScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ),
                 shape = MaterialTheme.shapes.large,
-                enabled = state.isImageVisible,
+                enabled = state.isImageVisible && state.displayOn,
                 modifier = Modifier
                     .padding(SmallPadding)
                     .fillMaxHeight()
                     .weight(1f)
             ) {
-                Text(text = "Hide Textbox", fontSize = LargeFontSize)
+                Text(
+                    text = if (state.isCaptionVisible) "Hide Textbox" else "Show Textbox",
+                    fontSize = LargeFontSize
+                )
             }
 
             Button(onClick = { onEvent(TabletEvent.ToggleImageVisibility) },
@@ -423,7 +428,10 @@ fun TabletScreen(
                     .fillMaxHeight()
                     .weight(1f)
             ) {
-                Text(text = "Hide Image", fontSize = LargeFontSize)
+                Text(
+                    text = if (state.isImageVisible) "Hide Image" else "Show Image",
+                    fontSize = LargeFontSize
+                )
             }
         }
 

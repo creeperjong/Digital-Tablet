@@ -10,9 +10,11 @@ data class TabletState(
     val canvasTapPositions: List<Offset> = emptyList(),
     val isCanvasTappable: Boolean = false,
     val isCaptionVisible: Boolean = true,
-    val isImageVisible: Boolean = true,
+    val isImageVisible: Boolean = false,
     val showTextDialog: Boolean = false,
     val dialogTextInput: String = "",
+    val displayOn: Boolean = true,
+    val keepContentOn: Boolean = true,
 
     // R&T
     val deviceId: String = "",
@@ -20,6 +22,7 @@ data class TabletState(
     val responseCaption: String = "",
     val mediaSources: List<String> = emptyList(),
     val mediaIdx: Int? = null,
+    val remoteAccepted: Boolean = false,
 
     // LLM
     val gptApiKey: String = "",

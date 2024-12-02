@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import com.example.digitaltablet.domain.usecase.MqttUseCase
 import com.example.digitaltablet.domain.usecase.RcslUseCase
 import com.example.digitaltablet.util.Constants.Mqtt
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -98,11 +100,14 @@ class TabletViewModel @Inject constructor(
             canvasTapPositions = emptyList(),
             isCanvasTappable = false,
             isCaptionVisible = true,
-            isImageVisible = true,
+            isImageVisible = false,
+            displayOn = true,
+            keepContentOn = true,
             caption = "",
             responseCaption = "",
             mediaSources = emptyList(),
             mediaIdx = null,
+            remoteAccepted = false,
         )
         mqttUseCase.publish(
             topic = getFullTopic(Mqtt.Topic.RESPONSE),
@@ -200,9 +205,6 @@ class TabletViewModel @Inject constructor(
         }
     }
 
-
-    // TODO
-
     /*
      *  MQTT related functions
      */
@@ -247,17 +249,74 @@ class TabletViewModel @Inject constructor(
                 Log.d("viewmodel", message)
                 val urls = extractUrlsFromText(message)
                 val caption = sanitizeTextForCaption(message)
-                _state.value = _state.value.copy(
-                    mediaSources = urls,
-                    caption = caption,
-                    mediaIdx = if (urls.isEmpty()) null else 0
-                )
+                _state.value = _state.value.copy(caption = caption)
+                if (urls.isEmpty()) {
+                    if (!_state.value.keepContentOn) {
+                        _state.value = _state.value.copy(
+                            isImageVisible = false,
+                            mediaSources = emptyList(),
+                            mediaIdx = null,
+                            canvasTapPositions = emptyList()
+                        )
+                    }
+                } else {
+                    _state.value = _state.value.copy(
+                        isImageVisible = true,
+                        mediaSources = urls,
+                        mediaIdx = 0,
+                        canvasTapPositions = emptyList()
+                    )
+                }
             }
             getFullTopic(Mqtt.Topic.STT) -> {
                 val caption = message.replaceFirstChar { it.uppercase() }
                     .split(": ")
                     .joinToString(": ") { sentence -> sentence.replaceFirstChar { it.uppercase() } }
                 _state.value = _state.value.copy(responseCaption = caption)
+            }
+            getFullTopic(Mqtt.Topic.IMAGE) -> {
+                val gson = Gson()
+                val type = object : TypeToken<List<String>>() {}.type
+                val images: List<String> = gson.fromJson(message, type)
+                if (images.isEmpty()) {
+                    if (!_state.value.keepContentOn) {
+                        _state.value = _state.value.copy(
+                            isImageVisible = false,
+                            mediaSources = emptyList(),
+                            mediaIdx = null,
+                            canvasTapPositions = emptyList()
+                        )
+                    }
+                } else {
+                    // TODO: retrieve images
+                    _state.value = _state.value.copy(
+                        isImageVisible = true,
+                        canvasTapPositions = emptyList(),
+                    )
+                }
+            }
+            getFullTopic(Mqtt.Topic.ARGV) -> {
+                when (message) {
+                    "wait_for_tap" -> {
+                        _state.value = _state.value.copy(
+                            isCanvasTappable = true,
+                            canvasTapPositions = emptyList(),
+                            remoteAccepted = true
+                        )
+                    }
+                    "DISPLAY ON" -> {
+                        _state.value = _state.value.copy(isCaptionVisible = true, displayOn = true)
+                    }
+                    "DISPLAY OFF" -> {
+                        _state.value = _state.value.copy(isCaptionVisible = false, displayOn = false)
+                    }
+                    "KEEP_CONTENT ON" -> {
+                        _state.value = _state.value.copy(keepContentOn = true)
+                    }
+                    "KEEP_CONTENT OFF" -> {
+                        _state.value = _state.value.copy(keepContentOn = false)
+                    }
+                }
             }
         }
     }
