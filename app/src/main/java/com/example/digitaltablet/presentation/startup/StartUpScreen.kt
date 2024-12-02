@@ -146,7 +146,9 @@ fun StartUpScreen(
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
             shape = MaterialTheme.shapes.large,
-            enabled = state.deviceId.isNotBlank() && state.asstName.isNotBlank(),
+            enabled = state.deviceId.isNotBlank() &&
+                    state.asstName.isNotBlank() &&
+                    state.asstId.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(SmallPadding)

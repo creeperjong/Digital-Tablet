@@ -3,7 +3,11 @@ package com.example.digitaltablet.presentation.tablet
 import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.geometry.Offset
+import androidx.core.net.toFile
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.digitaltablet.domain.model.llm.common.FileObj
+import com.example.digitaltablet.domain.usecase.LanguageModelUseCase
 import com.example.digitaltablet.domain.usecase.MqttUseCase
 import com.example.digitaltablet.domain.usecase.RcslUseCase
 import com.example.digitaltablet.util.Constants.Mqtt
@@ -13,6 +17,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
@@ -20,7 +26,7 @@ import kotlin.math.min
 @HiltViewModel
 class TabletViewModel @Inject constructor(
     private val mqttUseCase: MqttUseCase,
-    private val rcslUseCase: RcslUseCase,
+    private val languageModelUseCase: LanguageModelUseCase
 ): ViewModel() {
 
     private val _state = MutableStateFlow(TabletState())
@@ -60,7 +66,7 @@ class TabletViewModel @Inject constructor(
                 switchImage(event.page)
             }
             is TabletEvent.UploadImage -> {
-                sendImage(event.uri, event.onSent)
+                sendImage(event.image, event.onUpload)
             }
             is TabletEvent.ConfirmDialog -> {
                 sendTextInput(_state.value.dialogTextInput)
@@ -76,7 +82,7 @@ class TabletViewModel @Inject constructor(
                 _state.value = _state.value.copy(dialogTextInput = event.text)
             }
             is TabletEvent.UploadFile -> {
-                sendFile(event.uri)
+                sendFile(event.file)
             }
             is TabletEvent.ReceiveQrCodeResult -> {
                 sendTextInput(event.result)
@@ -163,8 +169,6 @@ class TabletViewModel @Inject constructor(
     private fun sendConnectInfos() {
         val apiKey = _state.value.gptApiKey
         val asstId = _state.value.assistantId
-        Log.d("viewmodel", "apiKey: $apiKey")
-        Log.d("viewmodel", "asstId: $asstId")
         if (apiKey.isNotBlank()) {
             mqttUseCase.publish(
                 topic = getFullTopic(Mqtt.Topic.API_KEY),
@@ -181,11 +185,18 @@ class TabletViewModel @Inject constructor(
         }
     }
 
-    private fun sendImage(uri: Uri?, onSent: (Uri) -> Unit) {
-        if ( uri == null ) {
+    private fun sendImage(image: File?, onSent: (File) -> Unit) {
+        if ( image == null ) {
             showToast("Error: Image not found.")
         } else {
-            // TODO: upload & after sent
+            uploadFile(file = image, purpose = "vision") { fileObj ->
+                mqttUseCase.publish(
+                    topic = getFullTopic(Mqtt.Topic.SEND_IMAGE),
+                    message = fileObj.id,
+                    qos = 0
+                )
+                onSent(image)
+            }
         }
     }
 
@@ -197,11 +208,35 @@ class TabletViewModel @Inject constructor(
         )
     }
 
-    private fun sendFile(uri: Uri?) {
-        if ( uri == null) {
+    private fun sendFile(file: File?) {
+        if ( file == null) {
             showToast("Error: File not found")
         } else {
-            // TODO
+            uploadFile(file = file, purpose = "assistants") { fileObj ->
+                mqttUseCase.publish(
+                    topic = getFullTopic(Mqtt.Topic.SEND_FILE),
+                    message = mapOf(
+                        "fileid" to fileObj.id,
+                        "filename" to fileObj.filename
+                    ).toString(),
+                    qos = 0
+                )
+            }
+        }
+    }
+
+    /*
+     *  LLM related functions
+     */
+
+    private fun uploadFile(file: File, purpose: String, onUpload: (FileObj) -> Unit) {
+        viewModelScope.launch {
+            val fileObj = languageModelUseCase.uploadFile(
+                file = file,
+                purpose = purpose,
+                gptApiKey = _state.value.gptApiKey
+            )
+            onUpload(fileObj)
         }
     }
 

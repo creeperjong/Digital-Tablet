@@ -2,6 +2,7 @@ package com.example.digitaltablet.presentation.tablet
 
 import android.net.Uri
 import androidx.compose.ui.geometry.Offset
+import java.io.File
 
 sealed class TabletEvent {
 
@@ -27,7 +28,7 @@ sealed class TabletEvent {
 
     data class SwitchImage(val page: Int): TabletEvent()
 
-    data class UploadImage(val uri: Uri?, val onSent: (Uri) -> Unit = {}): TabletEvent()
+    data class UploadImage(val image: File?, val onUpload: (File) -> Unit = {}): TabletEvent()
 
     data object ConfirmDialog: TabletEvent()
 
@@ -37,7 +38,7 @@ sealed class TabletEvent {
 
     data class ChangeDialogTextInput(val text: String): TabletEvent()
 
-    data class UploadFile(val uri: Uri?): TabletEvent()
+    data class UploadFile(val file: File?): TabletEvent()
 
     data class ReceiveQrCodeResult(val result: String): TabletEvent()
 

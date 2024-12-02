@@ -3,6 +3,7 @@ package com.example.digitaltablet.presentation.tablet
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -50,6 +51,7 @@ import com.example.digitaltablet.presentation.tablet.component.ScrollableCaption
 import com.example.digitaltablet.presentation.tablet.component.YouTubePlayer
 import com.example.digitaltablet.util.ToastManager
 import com.example.digitaltablet.util.createImageFile
+import com.example.digitaltablet.util.toFile
 
 @Composable
 fun TabletScreen(
@@ -64,11 +66,11 @@ fun TabletScreen(
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
+        uri?.let { it ->
             val contentResolver = context.contentResolver
             val mimeType = contentResolver.getType(it)
             if ( mimeType?.startsWith("image/") == true) {
-                onEvent(TabletEvent.UploadImage(it))
+                onEvent(TabletEvent.UploadImage(it.toFile(context)))
             } else {
                 onEvent(TabletEvent.UploadImage(null))
             }
@@ -89,8 +91,8 @@ fun TabletScreen(
         contract = ActivityResultContracts.TakePicture()
     ){ success ->
         if (success) {
-            onEvent(TabletEvent.UploadImage(photoUri) { uri ->
-                uri.toFile().delete()
+            onEvent(TabletEvent.UploadImage(photoUri?.toFile()) { file ->
+                file.delete()
             })
         }
     }
@@ -99,7 +101,7 @@ fun TabletScreen(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
-            onEvent(TabletEvent.UploadFile(uri))
+            onEvent(TabletEvent.UploadFile(uri.toFile(context)))
         }
     }
 
