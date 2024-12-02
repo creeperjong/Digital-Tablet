@@ -1,6 +1,7 @@
 package com.example.digitaltablet.di
 
 import android.app.Application
+import android.content.Context
 import android.speech.SpeechRecognizer
 import androidx.media3.common.C.Priority
 import com.example.digitaltablet.data.remote.LanguageModelApi
@@ -21,6 +22,7 @@ import com.example.digitaltablet.util.Constants.Rcsl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -64,8 +66,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideLanguageModelRepository(
-        languageModelApi: LanguageModelApi
-    ): ILanguageModelRepository = LanguageModelRepository(languageModelApi)
+        languageModelApi: LanguageModelApi,
+        @ApplicationContext context: Context
+    ): ILanguageModelRepository = LanguageModelRepository(languageModelApi, context)
 
     @Provides
     @Singleton

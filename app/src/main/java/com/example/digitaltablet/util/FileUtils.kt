@@ -11,15 +11,15 @@ fun Uri.toFile(context: Context): File? {
     val contentResolver: ContentResolver = context.contentResolver
     val filename = getFileName(contentResolver, this) ?: return null
     val tempFile = File(context.cacheDir, filename)
-    contentResolver.openInputStream(this)?.use { inputStream ->
+    contentResolver.openInputStream(this)?.use { `is` ->
         FileOutputStream(tempFile).use { os ->
-            inputStream.copyTo(os)
+            `is`.copyTo(os)
         }
     }
     return tempFile
 }
 
-private fun getFileName(contentResolver: ContentResolver, uri: Uri): String? {
+fun getFileName(contentResolver: ContentResolver, uri: Uri): String? {
     var name: String? = null
     val cursor = contentResolver.query(uri, null, null, null, null)
     cursor?.use {

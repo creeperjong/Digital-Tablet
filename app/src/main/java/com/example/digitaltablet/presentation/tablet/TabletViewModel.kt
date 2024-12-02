@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.core.net.toFile
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.digitaltablet.domain.model.llm.common.FileObj
@@ -14,10 +15,12 @@ import com.example.digitaltablet.util.Constants.Mqtt
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.max
@@ -281,7 +284,6 @@ class TabletViewModel @Inject constructor(
     private fun onMqttMessageArrived(topic: String, message: String) {
         when (topic) {
             getFullTopic(Mqtt.Topic.TTS) -> {
-                Log.d("viewmodel", message)
                 val urls = extractUrlsFromText(message)
                 val caption = sanitizeTextForCaption(message)
                 _state.value = _state.value.copy(caption = caption)
@@ -323,11 +325,21 @@ class TabletViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    // TODO: retrieve images
-                    _state.value = _state.value.copy(
-                        isImageVisible = true,
-                        canvasTapPositions = emptyList(),
-                    )
+                    viewModelScope.launch {
+                        val mediaSources = mutableListOf<String>()
+                        images.forEach {
+                            val file = languageModelUseCase.retrieveFile(it, _state.value.gptApiKey)
+                            if (file != null) {
+                                mediaSources.add(file.toUri().toString())
+                            }
+                        }
+                        _state.value = _state.value.copy(
+                            isImageVisible = true,
+                            mediaSources = mediaSources,
+                            mediaIdx = if (mediaSources.isEmpty()) null else 0,
+                            canvasTapPositions = emptyList(),
+                        )
+                    }
                 }
             }
             getFullTopic(Mqtt.Topic.ARGV) -> {

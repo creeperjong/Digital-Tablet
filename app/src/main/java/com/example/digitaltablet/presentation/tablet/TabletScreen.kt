@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
+import androidx.core.net.toUri
 import com.example.digitaltablet.R
 import com.example.digitaltablet.presentation.Dimens.LargeFontSize
 import com.example.digitaltablet.presentation.Dimens.MediumFontSize
@@ -51,6 +52,7 @@ import com.example.digitaltablet.presentation.tablet.component.ScrollableCaption
 import com.example.digitaltablet.presentation.tablet.component.YouTubePlayer
 import com.example.digitaltablet.util.ToastManager
 import com.example.digitaltablet.util.createImageFile
+import com.example.digitaltablet.util.getFileName
 import com.example.digitaltablet.util.toFile
 
 @Composable
@@ -91,7 +93,7 @@ fun TabletScreen(
         contract = ActivityResultContracts.TakePicture()
     ){ success ->
         if (success) {
-            onEvent(TabletEvent.UploadImage(photoUri?.toFile()) { file ->
+            onEvent(TabletEvent.UploadImage(photoUri?.toFile(context)) { file ->
                 file.delete()
             })
         }
@@ -274,11 +276,11 @@ fun TabletScreen(
                         )
                 ) {
                     Text(
-                        text =
-                        if (state.mediaIdx != null)
-                            state.mediaSources[state.mediaIdx]
-                        else
-                            "",
+                        text = if (state.mediaIdx != null) {
+                            val text = state.mediaSources[state.mediaIdx]
+                            if (text.contains("http")) text
+                            else getFileName(context.contentResolver, text.toUri()) ?: "Unknown"
+                        } else "",
                         fontSize = SmallFontSize,
                         color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier
