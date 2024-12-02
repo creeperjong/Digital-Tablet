@@ -8,7 +8,7 @@ data class TabletState(
     val toastMessages: List<String> = emptyList(),
     val displayTouchArea: Boolean = false,
     val canvasTapPositions: List<Offset> = emptyList(),
-    val isCanvasTappable: Boolean = true,
+    val isCanvasTappable: Boolean = false,
     val isCaptionVisible: Boolean = true,
     val isImageVisible: Boolean = true,
     val showTextDialog: Boolean = false,
@@ -18,8 +18,8 @@ data class TabletState(
     val deviceId: String = "",
     val caption: String = "",
     val responseCaption: String = "",
-    val mediaSources: List<String> = listOf("https://zidian.18dao.net/image/%E6%9D%AF.png", "https://zidian.18dao.net/image/%E7%93%B6.png", "https://youtu.be/tbDGl7jEazA"),
-    val mediaIdx: Int? = 0,
+    val mediaSources: List<String> = emptyList(),
+    val mediaIdx: Int? = null,
 
     // LLM
     val gptApiKey: String = "",

@@ -1,6 +1,7 @@
 package com.example.digitaltablet.presentation.tablet
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import com.example.digitaltablet.domain.usecase.MqttUseCase
@@ -67,7 +68,7 @@ class TabletViewModel @Inject constructor(
                 _state.value = _state.value.copy(showTextDialog = true)
             }
             is TabletEvent.DismissDialog -> {
-                _state.value = _state.value.copy(showTextDialog = false)
+                _state.value = _state.value.copy(showTextDialog = false, dialogTextInput = "")
             }
             is TabletEvent.ChangeDialogTextInput -> {
                 _state.value = _state.value.copy(dialogTextInput = event.text)
@@ -77,6 +78,9 @@ class TabletViewModel @Inject constructor(
             }
             is TabletEvent.ReceiveQrCodeResult -> {
                 sendTextInput(event.result)
+            }
+            is TabletEvent.NavigateUp -> {
+                resetAllTempStates()
             }
         }
     }
@@ -90,7 +94,21 @@ class TabletViewModel @Inject constructor(
     }
 
     private fun resetAllTempStates() {
-        // TODO
+        _state.value = _state.value.copy(
+            canvasTapPositions = emptyList(),
+            isCanvasTappable = false,
+            isCaptionVisible = true,
+            isImageVisible = true,
+            caption = "",
+            responseCaption = "",
+            mediaSources = emptyList(),
+            mediaIdx = null,
+        )
+        mqttUseCase.publish(
+            topic = getFullTopic(Mqtt.Topic.RESPONSE),
+            message = "[END]",
+            qos = 0
+        )
     }
 
     /*
@@ -140,6 +158,8 @@ class TabletViewModel @Inject constructor(
     private fun sendConnectInfos() {
         val apiKey = _state.value.gptApiKey
         val asstId = _state.value.assistantId
+        Log.d("viewmodel", "apiKey: $apiKey")
+        Log.d("viewmodel", "asstId: $asstId")
         if (apiKey.isNotBlank()) {
             mqttUseCase.publish(
                 topic = getFullTopic(Mqtt.Topic.API_KEY),
@@ -224,7 +244,14 @@ class TabletViewModel @Inject constructor(
     private fun onMqttMessageArrived(topic: String, message: String) {
         when (topic) {
             getFullTopic(Mqtt.Topic.TTS) -> {
-                _state.value = _state.value.copy(caption = message)
+                Log.d("viewmodel", message)
+                val urls = extractUrlsFromText(message)
+                val caption = sanitizeTextForCaption(message)
+                _state.value = _state.value.copy(
+                    mediaSources = urls,
+                    caption = caption,
+                    mediaIdx = if (urls.isEmpty()) null else 0
+                )
             }
             getFullTopic(Mqtt.Topic.STT) -> {
                 val caption = message.replaceFirstChar { it.uppercase() }
@@ -233,6 +260,18 @@ class TabletViewModel @Inject constructor(
                 _state.value = _state.value.copy(responseCaption = caption)
             }
         }
+    }
+
+    private fun extractUrlsFromText(text: String): List<String> {
+        return Regex("\\((https?://[^\\s)]+)\\)")
+            .findAll(text)
+            .map { it.groupValues[1] }
+            .toList()
+    }
+
+    private fun sanitizeTextForCaption(text: String): String {
+        val result = text.replace(Regex("\\((https?://[^\\s)]+)\\)"), "")
+        return result.replace(Regex("!?\\[[^]]*]"), "")
     }
 
 }

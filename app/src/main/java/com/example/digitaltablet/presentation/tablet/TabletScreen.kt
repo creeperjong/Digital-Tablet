@@ -147,7 +147,10 @@ fun TabletScreen(
                         .padding(SmallPadding)
                         .fillMaxWidth()
                         .weight(1f),
-                    onClick = { navigateUp() /* TODO: Send finish tag */ }
+                    onClick = {
+                        onEvent(TabletEvent.NavigateUp)
+                        navigateUp()
+                    }
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_kebbi),

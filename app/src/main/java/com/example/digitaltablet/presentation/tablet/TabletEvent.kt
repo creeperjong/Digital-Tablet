@@ -40,4 +40,6 @@ sealed class TabletEvent {
     data class UploadFile(val uri: Uri?): TabletEvent()
 
     data class ReceiveQrCodeResult(val result: String): TabletEvent()
+
+    data object NavigateUp: TabletEvent()
 }
