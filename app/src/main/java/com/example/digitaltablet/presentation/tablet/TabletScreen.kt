@@ -117,7 +117,7 @@ fun TabletScreen(
     }
 
     BackHandler {
-        onEvent(TabletEvent.DisconnectMqttBroker)
+        navigateUp()
     }
 
     LaunchedEffect(Unit) {
@@ -151,10 +151,7 @@ fun TabletScreen(
                         .padding(SmallPadding)
                         .fillMaxWidth()
                         .weight(1f),
-                    onClick = {
-                        onEvent(TabletEvent.NavigateUp)
-                        navigateUp()
-                    }
+                    onClick = { navigateUp() }
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_kebbi),
@@ -257,7 +254,7 @@ fun TabletScreen(
                         .padding(SmallPadding)
                         .fillMaxHeight()
                         .weight(
-                            if (state.isImageVisible) 4f
+                            if (state.isImageVisible) 3f
                             else 8f
                         )
                 ) {
@@ -271,7 +268,7 @@ fun TabletScreen(
                         .padding(SmallPadding)
                         .fillMaxHeight()
                         .weight(
-                            if (state.isCaptionVisible) 4f
+                            if (state.isCaptionVisible) 5f
                             else 8f
                         )
                 ) {
@@ -290,9 +287,10 @@ fun TabletScreen(
                     )
                     Box(
                         modifier = Modifier
-                            .padding(top = SmallPadding, bottom = SmallPadding)
+                            .padding(bottom = SmallPadding)
                             .fillMaxWidth()
-                            .weight(8f)
+                            .weight(9f),
+                        contentAlignment = Alignment.Center
                     ) {
                         if (state.mediaIdx != null &&
                             state.mediaIdx in state.mediaSources.indices
@@ -416,7 +414,7 @@ fun TabletScreen(
             ) {
                 Text(
                     text = if (state.isCaptionVisible) "Hide Textbox" else "Show Textbox",
-                    fontSize = LargeFontSize
+                    fontSize = MediumFontSize
                 )
             }
 
@@ -434,7 +432,7 @@ fun TabletScreen(
             ) {
                 Text(
                     text = if (state.isImageVisible) "Hide Image" else "Show Image",
-                    fontSize = LargeFontSize
+                    fontSize = MediumFontSize
                 )
             }
         }

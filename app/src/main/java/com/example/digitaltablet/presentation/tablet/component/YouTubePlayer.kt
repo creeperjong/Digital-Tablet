@@ -29,7 +29,7 @@ fun YouTubePlayer(videoUrl: String, modifier: Modifier = Modifier) {
                     false,
                     IFramePlayerOptions
                         .Builder()
-                        .autoplay(1)
+                        .autoplay(0)
                         .mute(0)
                         .controls(0)
                         .build()

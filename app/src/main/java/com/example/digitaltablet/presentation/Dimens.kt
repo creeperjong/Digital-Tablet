@@ -11,8 +11,8 @@ object Dimens {
 
     val SmallFontSize = 12.sp
 
-    val MediumFontSize = 18.sp
+    val MediumFontSize = 24.sp
 
-    val LargeFontSize = 24.sp
+    val LargeFontSize = 36.sp
 
 }
