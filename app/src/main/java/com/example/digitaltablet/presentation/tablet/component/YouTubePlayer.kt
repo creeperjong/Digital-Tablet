@@ -23,7 +23,7 @@ fun YouTubePlayer(videoUrl: String, modifier: Modifier = Modifier) {
                 initialize(
                     object : AbstractYouTubePlayerListener() {
                         override fun onReady(youTubePlayer: YouTubePlayer) {
-                            youTubePlayer.loadVideo(videoId, 0f)
+                            youTubePlayer.cueVideo(videoId, 0f)
                         }
                     },
                     false,

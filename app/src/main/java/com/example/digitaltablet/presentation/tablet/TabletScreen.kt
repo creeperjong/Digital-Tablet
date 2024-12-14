@@ -308,10 +308,14 @@ fun TabletScreen(
                                     imageUri = media,
                                     tapPositions = state.canvasTapPositions,
                                     tappable = state.isCanvasTappable,
-                                    modifier = Modifier.fillMaxSize()
-                                ) { tapPosition ->
-                                    onEvent(TabletEvent.TapOnCanvas(tapPosition))
-                                }
+                                    modifier = Modifier.fillMaxSize(),
+                                    onTap = { tapPosition ->
+                                        onEvent(TabletEvent.TapOnCanvas(tapPosition))
+                                    },
+                                    onSizeChanged = { size ->
+                                        onEvent(TabletEvent.ChangeCanvasSize(size))
+                                    }
+                                )
                             }
                         }
                     }
@@ -347,7 +351,7 @@ fun TabletScreen(
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             shape = MaterialTheme.shapes.large,
-                            enabled = state.isCanvasTappable,
+                            enabled = state.isCanvasTappable && state.mediaIdx != null,
                             modifier = Modifier
                                 .padding(horizontal = SmallPadding)
                                 .fillMaxHeight()
@@ -355,13 +359,13 @@ fun TabletScreen(
                         ) {
                             Text(text = "Clear", fontSize = MediumFontSize)
                         }
-                        Button(onClick = { /* TODO */ },
+                        Button(onClick = { onEvent(TabletEvent.SubmitCanvas(context = context)) },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             shape = MaterialTheme.shapes.large,
-                            enabled = state.isCanvasTappable,
+                            enabled = state.isCanvasTappable && state.mediaIdx != null,
                             modifier = Modifier
                                 .padding(horizontal = SmallPadding)
                                 .fillMaxHeight()

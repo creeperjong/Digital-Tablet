@@ -79,8 +79,8 @@ fun NavGraph() {
                 onEvent = tabletViewModel::onEvent,
                 navigateToScanner = { navController.navigate(Route.QrCodeScannerScreen.route) },
                 navigateUp = {
-                    tabletViewModel.onEvent(TabletEvent.DisconnectMqttBroker)
                     tabletViewModel.onEvent(TabletEvent.NavigateUp)
+                    tabletViewModel.onEvent(TabletEvent.DisconnectMqttBroker)
                     navController.popBackStack()
                 }
             )

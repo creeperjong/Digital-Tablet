@@ -1,17 +1,29 @@
 package com.example.digitaltablet.presentation.tablet
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.geometry.Offset
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import coil3.toBitmap
 import com.example.digitaltablet.domain.model.llm.common.FileObj
 import com.example.digitaltablet.domain.usecase.LanguageModelUseCase
 import com.example.digitaltablet.domain.usecase.MqttUseCase
 import com.example.digitaltablet.domain.usecase.RcslUseCase
 import com.example.digitaltablet.util.Constants.Mqtt
+import com.example.digitaltablet.util.getPropertyFromJsonString
+import com.example.digitaltablet.util.toBitMap
+import com.example.digitaltablet.util.toImageBitmap
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -93,6 +105,15 @@ class TabletViewModel @Inject constructor(
             is TabletEvent.NavigateUp -> {
                 resetAllTempStates()
             }
+            is TabletEvent.ChangeCanvasSize -> {
+                _state.value = _state.value.copy(
+                    canvasWidth = event.size.width,
+                    canvasHeight = event.size.height
+                )
+            }
+            is TabletEvent.SubmitCanvas -> {
+                sendCanvas(event.context)
+            }
         }
     }
 
@@ -165,6 +186,63 @@ class TabletViewModel @Inject constructor(
         )
     }
 
+    private suspend fun canvasToFile(
+        context: Context,
+        backgroundImgUri: String,
+        tapPositions: List<Offset>,
+    ): File {
+        val backgroundImage: Bitmap? = when {
+            backgroundImgUri.isBlank() -> null
+            backgroundImgUri.startsWith("http") -> {
+                val request = ImageRequest.Builder(context)
+                    .data(backgroundImgUri)
+                    .allowHardware(false)
+                    .build()
+                val result = context.imageLoader.execute(request)
+                if (result !is SuccessResult) null
+                else result.image.toBitmap()
+            }
+            Uri.parse(backgroundImgUri).scheme != null -> {
+                Uri.parse(backgroundImgUri).toBitMap(context)
+            }
+            else -> null
+        }
+
+        requireNotNull(backgroundImage) { "Invalid background image URI" }
+
+        val scalar = backgroundImage.width * 1f / _state.value.canvasWidth
+        val bitmap = Bitmap.createBitmap(
+            backgroundImage.width,
+            backgroundImage.height,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+
+        val paint = Paint()
+        canvas.drawBitmap(backgroundImage, 0f, 0f, paint)
+
+        val circlePaint = Paint().apply {
+            color = Color.RED
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+        }
+        tapPositions.forEach { position ->
+            canvas.drawCircle(
+                position.x * scalar,
+                position.y * scalar,
+                40f * scalar,
+                circlePaint
+            )
+        }
+
+        val file = File(context.cacheDir, "canvas_output_${System.currentTimeMillis()}.png")
+        file.outputStream().use { os ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
+        }
+
+        return file
+    }
+
     /*
      *  R&T related functions
      */
@@ -188,7 +266,7 @@ class TabletViewModel @Inject constructor(
         }
     }
 
-    private fun sendImage(image: File?, onSent: (File) -> Unit) {
+    private fun sendImage(image: File?, onSent: (File) -> Unit = {}) {
         if ( image == null ) {
             showToast("Error: Image not found.")
         } else {
@@ -225,6 +303,26 @@ class TabletViewModel @Inject constructor(
                     qos = 0
                 )
             }
+        }
+    }
+
+    private fun sendCanvas(context: Context) {
+        viewModelScope.launch {
+            val mediaIdx = _state.value.mediaIdx ?: return@launch
+            val media = _state.value.mediaSources[mediaIdx]
+            val tapPositions = _state.value.canvasTapPositions
+
+            val file = canvasToFile(
+                context = context,
+                backgroundImgUri = media,
+                tapPositions = tapPositions
+            )
+            sendImage(file)
+            _state.value = _state.value.copy(
+                remoteAccepted = false,
+                canvasTapPositions = emptyList(),
+                isCanvasTappable = false
+            )
         }
     }
 
@@ -363,6 +461,25 @@ class TabletViewModel @Inject constructor(
                     "KEEP_CONTENT OFF" -> {
                         _state.value = _state.value.copy(keepContentOn = false)
                     }
+                }
+            }
+            getFullTopic(Mqtt.Topic.TABLET) -> {
+                if (_state.value.remoteAccepted) {
+                    val response = getPropertyFromJsonString(
+                        json = message,
+                        propertyName = "TABLET",
+                        expectedType = String::class
+                    )
+                    mqttUseCase.publish(
+                        topic = getFullTopic(Mqtt.Topic.RESPONSE),
+                        message = response ?: "",
+                        qos = 0
+                    )
+                    _state.value = _state.value.copy(
+                        isCanvasTappable = false,
+                        canvasTapPositions = emptyList(),
+                        remoteAccepted = false
+                    )
                 }
             }
         }

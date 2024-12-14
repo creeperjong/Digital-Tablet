@@ -1,7 +1,10 @@
 package com.example.digitaltablet.presentation.tablet
 
+import android.content.Context
 import android.net.Uri
+import android.util.Size
 import androidx.compose.ui.geometry.Offset
+import com.google.common.collect.Table
 import java.io.File
 
 sealed class TabletEvent {
@@ -43,4 +46,8 @@ sealed class TabletEvent {
     data class ReceiveQrCodeResult(val result: String): TabletEvent()
 
     data object NavigateUp: TabletEvent()
+
+    data class ChangeCanvasSize(val size: Size): TabletEvent()
+
+    data class SubmitCanvas(val context: Context): TabletEvent()
 }

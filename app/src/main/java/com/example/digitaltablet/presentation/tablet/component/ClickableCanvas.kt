@@ -1,8 +1,10 @@
 package com.example.digitaltablet.presentation.tablet.component
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Size
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
@@ -18,6 +20,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -35,7 +38,8 @@ fun ClickableCanvas(
     tapPositions: List<Offset>,
     tappable: Boolean,
     modifier: Modifier = Modifier,
-    onTap: (Offset) -> Unit
+    onTap: (Offset) -> Unit,
+    onSizeChanged: (Size) -> Unit
 ) {
     val context = LocalContext.current
     var backgroundImage: ImageBitmap? by remember {
@@ -65,6 +69,10 @@ fun ClickableCanvas(
                     onTap(offset)
                 }
             }
+            .onGloballyPositioned { layoutCoordinates ->
+                val size = layoutCoordinates.size
+                onSizeChanged(Size(size.width, size.height))
+            }
     ) {
         backgroundImage?.let {
             val widthZoomRatio = size.width.toInt() * 1f / it.width
@@ -91,5 +99,4 @@ fun ClickableCanvas(
             }
         }
     }
-
 }

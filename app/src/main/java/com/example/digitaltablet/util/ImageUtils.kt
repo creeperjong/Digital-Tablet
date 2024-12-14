@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
@@ -17,6 +18,18 @@ fun Uri.toImageBitmap(context: Context): ImageBitmap? {
         val bitmap = BitmapFactory.decodeStream(inputStream)
         inputStream?.close()
         bitmap?.asImageBitmap()
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+fun Uri.toBitMap(context: Context): Bitmap? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(this)
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        inputStream?.close()
+        bitmap
     } catch (e: Exception) {
         e.printStackTrace()
         null
