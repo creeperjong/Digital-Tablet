@@ -1,6 +1,7 @@
 package com.example.digitaltablet.presentation.tablet
 
 import androidx.compose.ui.geometry.Offset
+import com.example.digitaltablet.presentation.tablet.component.PlayerCommand
 
 data class TabletState(
 
@@ -8,7 +9,7 @@ data class TabletState(
     val toastMessages: List<String> = emptyList(),
     val displayTouchArea: Boolean = false,
     val canvasTapPositions: List<Offset> = emptyList(),
-    val isCanvasTappable: Boolean = true,
+    val isCanvasTappable: Boolean = false,
     val canvasWidth: Int = 0,
     val canvasHeight: Int = 0,
     val isCaptionVisible: Boolean = true,
@@ -17,6 +18,7 @@ data class TabletState(
     val dialogTextInput: String = "",
     val displayOn: Boolean = true,
     val keepContentOn: Boolean = true,
+    val playerCommand: PlayerCommand = PlayerCommand.None,
 
     // R&T
     val deviceId: String = "",

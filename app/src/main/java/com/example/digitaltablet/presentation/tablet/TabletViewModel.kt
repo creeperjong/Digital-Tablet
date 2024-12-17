@@ -20,6 +20,7 @@ import com.example.digitaltablet.domain.model.llm.common.FileObj
 import com.example.digitaltablet.domain.usecase.LanguageModelUseCase
 import com.example.digitaltablet.domain.usecase.MqttUseCase
 import com.example.digitaltablet.domain.usecase.RcslUseCase
+import com.example.digitaltablet.presentation.tablet.component.PlayerCommand
 import com.example.digitaltablet.util.Constants.Mqtt
 import com.example.digitaltablet.util.getPropertyFromJsonString
 import com.example.digitaltablet.util.toBitMap
@@ -114,6 +115,9 @@ class TabletViewModel @Inject constructor(
             is TabletEvent.SubmitCanvas -> {
                 sendCanvas(event.context)
             }
+            is TabletEvent.ClearPlayerCommand -> {
+                clearPlayerCommand()
+            }
         }
     }
 
@@ -133,6 +137,7 @@ class TabletViewModel @Inject constructor(
             isImageVisible = false,
             displayOn = true,
             keepContentOn = true,
+            playerCommand = PlayerCommand.None,
             caption = "",
             responseCaption = "",
             mediaSources = emptyList(),
@@ -210,7 +215,10 @@ class TabletViewModel @Inject constructor(
 
         requireNotNull(backgroundImage) { "Invalid background image URI" }
 
-        val scalar = backgroundImage.width * 1f / _state.value.canvasWidth
+        val widthScalar = backgroundImage.width * 1f / _state.value.canvasWidth
+        val heightScalar = backgroundImage.height * 1f / _state.value.canvasHeight
+        val scalar = min(widthScalar, heightScalar)
+
         val bitmap = Bitmap.createBitmap(
             backgroundImage.width,
             backgroundImage.height,
@@ -241,6 +249,18 @@ class TabletViewModel @Inject constructor(
         }
 
         return file
+    }
+
+    private fun playVideo() {
+        _state.value = _state.value.copy(playerCommand = PlayerCommand.Play)
+    }
+
+    private fun pauseVideo() {
+        _state.value = _state.value.copy(playerCommand = PlayerCommand.Pause)
+    }
+
+    private fun clearPlayerCommand() {
+        _state.value = _state.value.copy(playerCommand = PlayerCommand.None)
     }
 
     /*
@@ -382,6 +402,7 @@ class TabletViewModel @Inject constructor(
     private fun onMqttMessageArrived(topic: String, message: String) {
         when (topic) {
             getFullTopic(Mqtt.Topic.TTS) -> {
+                pauseVideo()
                 val urls = extractUrlsFromText(message)
                 val caption = sanitizeTextForCaption(message)
                 _state.value = _state.value.copy(caption = caption)

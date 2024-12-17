@@ -1,6 +1,11 @@
 package com.example.digitaltablet.presentation.tablet.component
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -11,9 +16,24 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFram
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
 @Composable
-fun YouTubePlayer(videoUrl: String, modifier: Modifier = Modifier) {
+fun YouTubePlayer(
+    videoUrl: String,
+    playerCommand: PlayerCommand,
+    modifier: Modifier = Modifier,
+    onCommandExecute: () -> Unit,
+) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val videoId = getYouTubeVideoId(videoUrl)
+    var youTubePlayer: YouTubePlayer? by remember { mutableStateOf(null) }
+
+    LaunchedEffect(playerCommand) {
+        when(playerCommand) {
+            is PlayerCommand.Play -> youTubePlayer?.play()
+            is PlayerCommand.Pause -> youTubePlayer?.pause()
+            else -> {}
+        }
+        onCommandExecute()
+    }
 
     AndroidView(
         factory = { context ->
@@ -22,8 +42,9 @@ fun YouTubePlayer(videoUrl: String, modifier: Modifier = Modifier) {
                 lifecycleOwner.lifecycle.addObserver(this)
                 initialize(
                     object : AbstractYouTubePlayerListener() {
-                        override fun onReady(youTubePlayer: YouTubePlayer) {
-                            youTubePlayer.cueVideo(videoId, 0f)
+                        override fun onReady(player: YouTubePlayer) {
+                            youTubePlayer = player
+                            player.cueVideo(videoId, 0f)
                         }
                     },
                     false,
@@ -44,4 +65,10 @@ private fun getYouTubeVideoId(url: String): String {
     val regex = "(?:https?://)?(?:www\\.)?(?:youtube\\.com/(?:watch\\?v=|v/|shorts/|embed/|.*\\?v=)|youtu\\.be/)([\\w\\-]{11})".toRegex()
     val matchResult = regex.find(url)
     return matchResult?.groups?.get(1)?.value ?: ""
+}
+
+sealed class PlayerCommand {
+    data object Play : PlayerCommand()
+    data object Pause : PlayerCommand()
+    data object None : PlayerCommand()
 }

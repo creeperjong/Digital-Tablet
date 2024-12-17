@@ -48,6 +48,7 @@ import com.example.digitaltablet.presentation.Dimens.MediumFontSize
 import com.example.digitaltablet.presentation.Dimens.SmallFontSize
 import com.example.digitaltablet.presentation.Dimens.SmallPadding
 import com.example.digitaltablet.presentation.tablet.component.ClickableCanvas
+import com.example.digitaltablet.presentation.tablet.component.PlayerCommand
 import com.example.digitaltablet.presentation.tablet.component.ScrollableCaption
 import com.example.digitaltablet.presentation.tablet.component.YouTubePlayer
 import com.example.digitaltablet.util.ToastManager
@@ -301,8 +302,9 @@ fun TabletScreen(
                             ) {
                                 YouTubePlayer(
                                     videoUrl = media,
+                                    playerCommand = state.playerCommand,
                                     modifier = Modifier.fillMaxSize().aspectRatio(16f / 9f)
-                                )
+                                ) { onEvent(TabletEvent.ClearPlayerCommand) }
                             } else {
                                 ClickableCanvas(
                                     imageUri = media,

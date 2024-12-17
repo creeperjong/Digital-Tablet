@@ -1,5 +1,6 @@
 package com.example.digitaltablet.presentation.tablet
 
+import android.app.ActionBar.Tab
 import android.content.Context
 import android.net.Uri
 import android.util.Size
@@ -50,4 +51,6 @@ sealed class TabletEvent {
     data class ChangeCanvasSize(val size: Size): TabletEvent()
 
     data class SubmitCanvas(val context: Context): TabletEvent()
+
+    data object ClearPlayerCommand: TabletEvent()
 }
