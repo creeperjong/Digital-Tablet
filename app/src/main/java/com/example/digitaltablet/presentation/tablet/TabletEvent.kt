@@ -48,7 +48,7 @@ sealed class TabletEvent {
 
     data object NavigateUp: TabletEvent()
 
-    data class ChangeCanvasSize(val size: Size): TabletEvent()
+    data class ChangeCanvasRatio(val ratio: Float): TabletEvent()
 
     data class SubmitCanvas(val context: Context): TabletEvent()
 

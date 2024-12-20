@@ -4,12 +4,15 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import android.util.Size
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -24,6 +27,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.toOffset
 import coil3.compose.rememberAsyncImagePainter
 import coil3.imageLoader
 import coil3.request.ImageRequest
@@ -39,12 +43,17 @@ fun ClickableCanvas(
     tappable: Boolean,
     modifier: Modifier = Modifier,
     onTap: (Offset) -> Unit,
-    onSizeChanged: (Size) -> Unit
+    onRatioChanged: (Float) -> Unit
 ) {
     val context = LocalContext.current
     var backgroundImage: ImageBitmap? by remember {
         mutableStateOf(null)
     }
+    var zoomRatio by remember { mutableFloatStateOf(0f) }
+    var canvasSize by remember { mutableStateOf(Size(0,0)) }
+    var imageSize by remember { mutableStateOf(Size(0, 0)) }
+    var zoomedImageSize by remember { mutableStateOf(Size(0, 0)) }
+    var imageOffset by remember { mutableStateOf(Offset(0f, 0f)) }
 
     LaunchedEffect(imageUri) {
         if (imageUri == "") {
@@ -66,25 +75,37 @@ fun ClickableCanvas(
         modifier = modifier
             .pointerInput(Unit) {
                 detectTapGestures { offset ->
-                    onTap(offset)
+                    if ((offset.x.toInt() in imageOffset.x.toInt() until imageOffset.x.toInt() + zoomedImageSize.width) &&
+                        offset.y.toInt() in imageOffset.y.toInt() until imageOffset.y.toInt() + zoomedImageSize.height ) {
+                        onTap((offset - imageOffset) / zoomRatio)
+                    }
                 }
             }
             .onGloballyPositioned { layoutCoordinates ->
                 val size = layoutCoordinates.size
-                onSizeChanged(Size(size.width, size.height))
+                canvasSize = Size(size.width, size.height)
             }
     ) {
         backgroundImage?.let {
-            val widthZoomRatio = size.width.toInt() * 1f / it.width
-            val heightZoomRatio = size.height.toInt() * 1f / it.height
-            val targetZoomRatio = min(widthZoomRatio, heightZoomRatio)
-            val dstWidth = (it.width * targetZoomRatio).toInt()
-            val dstHeight = (it.height * targetZoomRatio).toInt()
+            imageSize = Size(it.width, it.height)
+            val widthZoomRatio = canvasSize.width * 1f / imageSize.width
+            val heightZoomRatio = canvasSize.height * 1f / imageSize.height
+            zoomRatio = min(widthZoomRatio, heightZoomRatio)
+            onRatioChanged(zoomRatio)
+
+            val dstWidth = (imageSize.width * zoomRatio).toInt()
+            val dstHeight = (imageSize.height * zoomRatio).toInt()
+            zoomedImageSize = Size(dstWidth, dstHeight)
+            imageOffset = Offset(
+                (canvasSize.width - dstWidth) / 2f,
+                (canvasSize.height - dstHeight) / 2f
+            )
+
             drawImage(
                 image = it,
-                srcSize = IntSize(it.width, it.height),
-                dstSize = IntSize(width = dstWidth, height = dstHeight),
-                dstOffset = IntOffset(size.width.toInt() / 2 - dstWidth / 2, 0)
+                srcSize = IntSize(imageSize.width, imageSize.height),
+                dstSize = IntSize(width = zoomedImageSize.width, height = zoomedImageSize.height),
+                dstOffset = IntOffset(imageOffset.x.toInt(), imageOffset.y.toInt())
             )
         }
 
@@ -93,7 +114,7 @@ fun ClickableCanvas(
                 drawCircle(
                     color = Color.Red,
                     radius = 40f,
-                    center = position,
+                    center = position * zoomRatio + imageOffset,
                     style = Stroke(width = 3f)
                 )
             }

@@ -314,8 +314,8 @@ fun TabletScreen(
                                     onTap = { tapPosition ->
                                         onEvent(TabletEvent.TapOnCanvas(tapPosition))
                                     },
-                                    onSizeChanged = { size ->
-                                        onEvent(TabletEvent.ChangeCanvasSize(size))
+                                    onRatioChanged = { ratio ->
+                                        onEvent(TabletEvent.ChangeCanvasRatio(ratio))
                                     }
                                 )
                             }

@@ -106,11 +106,8 @@ class TabletViewModel @Inject constructor(
             is TabletEvent.NavigateUp -> {
                 resetAllTempStates()
             }
-            is TabletEvent.ChangeCanvasSize -> {
-                _state.value = _state.value.copy(
-                    canvasWidth = event.size.width,
-                    canvasHeight = event.size.height
-                )
+            is TabletEvent.ChangeCanvasRatio -> {
+                _state.value = _state.value.copy(canvasToImageRatio = event.ratio)
             }
             is TabletEvent.SubmitCanvas -> {
                 sendCanvas(event.context)
@@ -133,6 +130,7 @@ class TabletViewModel @Inject constructor(
         _state.value = _state.value.copy(
             canvasTapPositions = emptyList(),
             isCanvasTappable = false,
+            canvasToImageRatio = 0f,
             isCaptionVisible = true,
             isImageVisible = false,
             displayOn = true,
@@ -215,10 +213,6 @@ class TabletViewModel @Inject constructor(
 
         requireNotNull(backgroundImage) { "Invalid background image URI" }
 
-        val widthScalar = backgroundImage.width * 1f / _state.value.canvasWidth
-        val heightScalar = backgroundImage.height * 1f / _state.value.canvasHeight
-        val scalar = min(widthScalar, heightScalar)
-
         val bitmap = Bitmap.createBitmap(
             backgroundImage.width,
             backgroundImage.height,
@@ -234,11 +228,12 @@ class TabletViewModel @Inject constructor(
             style = Paint.Style.STROKE
             strokeWidth = 3f
         }
+        val imageToCanvasRatio = 1f / _state.value.canvasToImageRatio
         tapPositions.forEach { position ->
             canvas.drawCircle(
-                position.x * scalar,
-                position.y * scalar,
-                40f * scalar,
+                position.x,
+                position.y,
+                40f * imageToCanvasRatio,
                 circlePaint
             )
         }
@@ -314,12 +309,17 @@ class TabletViewModel @Inject constructor(
             showToast("Error: File not found")
         } else {
             uploadFile(file = file, purpose = "assistants") { fileObj ->
+                val gson = Gson()
+                Log.d("viewmodel", gson.toJson(mapOf(
+                    "fileid" to fileObj.id,
+                    "filename" to fileObj.filename
+                )))
                 mqttUseCase.publish(
                     topic = getFullTopic(Mqtt.Topic.SEND_FILE),
-                    message = mapOf(
+                    message = gson.toJson(mapOf(
                         "fileid" to fileObj.id,
                         "filename" to fileObj.filename
-                    ).toString(),
+                    )),
                     qos = 0
                 )
             }
