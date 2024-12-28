@@ -310,10 +310,6 @@ class TabletViewModel @Inject constructor(
         } else {
             uploadFile(file = file, purpose = "assistants") { fileObj ->
                 val gson = Gson()
-                Log.d("viewmodel", gson.toJson(mapOf(
-                    "fileid" to fileObj.id,
-                    "filename" to fileObj.filename
-                )))
                 mqttUseCase.publish(
                     topic = getFullTopic(Mqtt.Topic.SEND_FILE),
                     message = gson.toJson(mapOf(

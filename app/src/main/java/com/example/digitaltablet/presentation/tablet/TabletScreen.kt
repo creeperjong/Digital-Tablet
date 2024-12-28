@@ -83,7 +83,7 @@ fun TabletScreen(
     // Camera & Photo Upload
     var hasCameraPermission by remember { mutableStateOf(false) }
     val photoUri = remember {
-        context.contentResolver.createImageFile("temp_photo.jpg")
+        context.contentResolver.createImageFile("temp_photo_${System.currentTimeMillis()}.jpg")
     }
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
