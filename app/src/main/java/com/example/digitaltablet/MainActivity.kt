@@ -40,11 +40,13 @@ class MainActivity : ComponentActivity() {
 
                 if (throwable is HttpException) {
                     val statusCode = throwable.code()
+                    val api = throwable.response()?.raw()?.request?.url?.toString()
                     val errorBody = throwable.response()?.errorBody()?.string()
 
                     errorMessage = """
                         HTTP Exception occurred:
                         Status code: $statusCode
+                        API: $api
                         Error body: ${errorBody ?: "No additional information"}
                     """.trimIndent()
                 } else if (throwable is MqttException) {
