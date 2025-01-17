@@ -34,3 +34,5 @@ google-services.json
 
 # ApiKeys
 apikeys.properties
+
+.DS_Store

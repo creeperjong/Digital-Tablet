@@ -466,6 +466,9 @@ class TabletViewModel @Inject constructor(
                             remoteAccepted = true
                         )
                     }
+                    "clear_canvas" -> {
+                        _state.value = _state.value.copy(canvasTapPositions = emptyList())
+                    }
                     "DISPLAY ON" -> {
                         _state.value = _state.value.copy(isCaptionVisible = true, displayOn = true)
                     }
