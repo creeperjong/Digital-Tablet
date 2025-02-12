@@ -367,7 +367,9 @@ fun TabletScreen(
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
                             shape = MaterialTheme.shapes.large,
-                            enabled = state.isCanvasTappable && state.mediaIdx != null,
+                            enabled = state.isCanvasTappable &&
+                                    state.mediaIdx != null &&
+                                    state.canvasTapPositions.isNotEmpty(),
                             modifier = Modifier
                                 .padding(horizontal = SmallPadding)
                                 .fillMaxHeight()
